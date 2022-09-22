@@ -65,7 +65,8 @@ test -d "${CONFIG_DIR}" || mkdir -p "${CONFIG_DIR}"
 # Check for membership in group docker
 if ! id | grep docker > /dev/null; then
     info-message "Add current user to group docker."
-    sudo usermod -aG docker "$USER"
+    grep docker: /etc/group > /dev/null 2>&1 || sudo groupadd docker
+    sudo usermod -aG docker "$USER" || exit
     info-message "Logout and back in again to update group memberships."
     exit
 fi
