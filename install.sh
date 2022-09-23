@@ -1,6 +1,7 @@
 #!/bin/bash
 
 CONFIG_DIR="${HOME}/.config/manir"
+export DEBIAN_FRONTEND=noninteractive
 
 #
 # Functions
@@ -18,6 +19,45 @@ function error-message() {
 function error-exit-message() {
     (>&2 echo "**** ERROR: $*")
         exit 1
+}
+
+# Turn off sound on start up
+ function turn-off-sound() {
+    if [[ ! -e /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override ]]; then
+        echo -e '[com.canonical.unity-greeter]\nplay-ready-sound = false' | \
+        sudo tee -a /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override > /dev/null
+        sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+    fi
+    touch "${CONFIG_DIR}/sound_done"
+}
+
+function update-ubuntu(){
+    info-message "Updating Ubuntu."
+    info-message "Running apt update."
+    # shellcheck disable=SC2024
+    sudo apt update
+    info-message "Running apt dist-upgrade."
+    # shellcheck disable=SC2024
+    while ! sudo DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade --force-yes > /dev/null 2>&1 ; do
+        echo "APT busy. Will retry in 10 seconds."
+        sleep 10
+    done
+    touch "${CONFIG_DIR}/ubuntu_done"
+}
+
+# Install Google Chrome
+function install-google-chrome() {
+    if ! dpkg --status google-chrome-stable > /dev/null 2>&1 ; then
+        info-message "Installing Google Chrome."
+        cd /tmp || error-exit-message "Couldn't cd /tmp in install-google-chrome."
+        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        # shellcheck disable=SC2024
+        sudo dpkg -i google-chrome-stable_current_amd64.deb || true
+        # shellcheck disable=SC2024
+        sudo apt -qq -f -y install
+        rm -f google-chrome-stable_current_amd64.deb
+    fi
+    touch "${CONFIG_DIR}/google_done"
 }
 
 # Function to configure Malcolm
@@ -86,6 +126,9 @@ cd "${HOME}" || exit
 test -d Malcolm || git clone https://github.com/cisagov/Malcolm.git
 cd Malcolm || exit
 
+test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
+test -e "${CONFIG_DIR}/google_done" || install-google-chrome
+test -e "${CONFIG_DIR}/sound_done" || turn-off-sound
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
