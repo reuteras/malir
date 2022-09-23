@@ -11,7 +11,7 @@ This script is only tested on Ubuntu 22.04 LTS.
 Start by cloning the repo and entering it. If you don't have git installed start with **sudo apt install -y git**.
 
     git clone https://github.com/reuteras/malir.git
-    cd manir
+    cd malir
 
 Before the installation is finished you will have to logout one time (update group membership for Docker) and reboot the computer one time (updated settings). You have to rerun the **install.sh** script after logging out and rebooting the computer. The **install.sh** script will tell you when to logout and reboot. To start the process run the following command in the manin
 
