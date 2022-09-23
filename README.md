@@ -30,12 +30,17 @@ After the installation is finished you can optionally run the following command 
 
     ./tools.sh
 
+Other scripts:
+
+- clean.sh - Clean apt and run **docker system prune**
+- zero.sh - Write zeros to free space. Don't do this if you have a large disk in the VM.
+
 ## Usage
 
 Some useful Malcolm links on 127.0.0.1:
 
-- [Arkime sessions][las]
 - [Capture File and Log Archive Upload][lup]
+- [Arkime sessions][las]
 - [Dashboards][lda]
 - [Extracted files][lef]
 - [User admin][luf]
