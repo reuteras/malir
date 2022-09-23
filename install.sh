@@ -24,6 +24,7 @@ function error-exit-message() {
 # Turn off sound on start up
  function turn-off-sound() {
     if [[ ! -e /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override ]]; then
+	info-message "Turn off sound."
         echo -e '[com.canonical.unity-greeter]\nplay-ready-sound = false' | \
         sudo tee -a /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override > /dev/null
         sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
@@ -35,11 +36,11 @@ function update-ubuntu(){
     info-message "Updating Ubuntu."
     info-message "Running apt update."
     # shellcheck disable=SC2024
-    sudo apt update
+    sudo apt update -qq > /dev/null 2>&1
     info-message "Running apt dist-upgrade."
     # shellcheck disable=SC2024
     while ! sudo DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade --force-yes > /dev/null 2>&1 ; do
-        echo "APT busy. Will retry in 10 seconds."
+        info-message "APT busy. Will retry in 10 seconds."
         sleep 10
     done
     touch "${CONFIG_DIR}/ubuntu_done"
@@ -52,9 +53,9 @@ function install-google-chrome() {
         cd /tmp || error-exit-message "Couldn't cd /tmp in install-google-chrome."
         wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         # shellcheck disable=SC2024
-        sudo dpkg -i google-chrome-stable_current_amd64.deb || true
+        sudo dpkg -i google-chrome-stable_current_amd64.deb > /dev/null 2>&1 || true
         # shellcheck disable=SC2024
-        sudo apt -qq -f -y install
+        sudo apt -qq -f -y install > /dev/null 2>&1
         rm -f google-chrome-stable_current_amd64.deb
     fi
     touch "${CONFIG_DIR}/google_done"
@@ -89,7 +90,7 @@ function malcolm-maxmind() {
     echo ""
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" docker-compose.yml > /dev/null 2&>1 ; then
-        echo "Maxmind GeoIP License key not updated, exiting."
+        error-exit-message "Maxmind GeoIP License key not updated, exiting."
         exit
     fi
     touch "${CONFIG_DIR}/maxmind_done"
