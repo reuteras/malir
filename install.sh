@@ -67,6 +67,8 @@ function malcolm-configure() {
     info-message "Starting interactive configuration of Malcolm"
     sudo python3 scripts/install.py
     python3 scripts/install.py --configure
+    sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'false'/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'true'/" docker-compose.yml
+    sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'true'/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'false'/" docker-compose.yml
     info-message "Configuration done."
     touch "${CONFIG_DIR}/configure_done"
     info-message "Reboot to update settings. Then run the script again."
@@ -113,6 +115,11 @@ function malcolm-background() {
 
 # Create directory for status of installation and setup
 test -d "${CONFIG_DIR}" || mkdir -p "${CONFIG_DIR}"
+
+if ! gsettings get org.gnome.shell favorite-apps | grep "org.gnome.Terminal.desktop" > /dev/null ; then
+    info-message "Add Terminal to favorite apps."
+    gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'org.gnome.Terminal.desktop']"
+fi
 
 # Check for membership in group docker
 if ! grep "docker:" /etc/group | grep ":user" > /dev/null; then
