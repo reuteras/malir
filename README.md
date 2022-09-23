@@ -6,7 +6,7 @@ The plan is to start with Malcom and add more functions and tune the installatio
 
 ## Installation
 
-This script is only tested on Ubuntu 22.04 LTS.
+This script is only tested on Ubuntu 22.04 LTS and I recommend running it in VM. The script will change default background during installation. Image is from [SANS][san].
 
 Start by cloning the repo and entering it. If you don't have git installed start with **sudo apt install -y git**.
 
@@ -57,5 +57,6 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
   [lup]: https://127.0.0.1/upload
   [mal]: https://github.com/cisagov/Malcolm
   [nfa]: https://github.com/ansv46/nfa.git
+  [san]: https://www.sans.org/blog/sans-zoom-backgrounds/
   [upd]: https://github.com/cisagov/Malcolm#UpgradePlan
   [zif]: https://github.com/cisagov/Malcolm#zeek-intelligence-framework
