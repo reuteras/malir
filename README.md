@@ -47,11 +47,11 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
 ## TODO
 
 - [ ] Add support to tag TOR exit nodes.
-- [ ] Try and se if [nfa][nfa] is useful.
+- [ ] Try and see if [nfa][nfa] is useful.
 - [ ] Add more right-click functionality to Arkime
 - [ ] More plugins to Zeek?
 - [ ] Zeek [Intelligence Framework][zif] in Malcolm?
-- [ ] Look at theA Malcolm [api][api].
+- [ ] Look at the Malcolm [api][api].
 - [ ] Read [Ingesting Third-Party Logs][itl] and [Forwarding Third-Party Logs to Malcolm][ftl]
 - [ ] Is it useful to have an [update][upd] script for this usecase?
 
