@@ -46,6 +46,7 @@ function malcolm-maxmind() {
     info-message "Go to https://www.maxmind.com/"
     echo ""
     read -sp "Maxmind GeoIP license key: " MAXMIND_KEY
+    echo ""
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" docker-compose.yml > /dev/null 2&>1 ; then
         echo "Maxmind GeoIP License key not updated, exiting."
@@ -61,6 +62,11 @@ function malcolm-authentication() {
     touch "${CONFIG_DIR}/authentication_done"
 }
 
+function malcolm-background() {
+    info-message "Set background." 
+    gsettings set org.gnome.desktop.background picture-uri "file:///home/${USER}/manir/resources/bg.jpg"
+    touch "${CONFIG_DIR}/background_done"
+}
 # End of functions
 
 # Create directory for status of installation and setup
@@ -84,6 +90,7 @@ test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
 test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
+test -e "${CONFIG_DIR}/background_done" || malcolm-background
 
 info-message "Installation done."
 info-message "Start Malcolm by running ./script/start in the ~/Malcolm directory."
