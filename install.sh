@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_DIR="${HOME}/.config/mir-script"
+CONFIG_DIR="${HOME}/.config/manir"
 
 #
 # Functions
