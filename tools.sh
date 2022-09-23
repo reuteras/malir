@@ -1,6 +1,8 @@
 #!/bin/bash
 #
 
+export DEBIAN_FRONTEND=noninteractive
+
 # Functions to print messages
 function info-message() {
     echo "**** INFO: $*"
