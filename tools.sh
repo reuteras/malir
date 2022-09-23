@@ -5,10 +5,8 @@ sudo apt install -y -q \
 	ascii \
 	bless \
 	bsdgames \
-	ctags \
 	dos2unix \
 	exfat-fuse \
-	exfat-utils \
 	git \
 	jq \
 	ngrep \
