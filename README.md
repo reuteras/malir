@@ -21,6 +21,20 @@ After the installation is finished you can optionally run the following command 
 
     ./tools.sh
 
+## Usage
+
+Some useful Malcolm links on 127.0.0.1:
+
+- [Arkime sessions][las]
+- [Capture File and Log Archive Upload][lup]
+- [Dashboards][lda]
+- [Extracted files][lef]
+- [User admin][luf]
+- [Host and Network Segment Name Mapping][lhn]
+
+
+To upload files via command line connect to **sftp://USERNAME@localhost:8022/files/**.
+
 ## TODO
 
 - [ ] Add support to tag TOR exit nodes.
@@ -35,6 +49,12 @@ After the installation is finished you can optionally run the following command 
   [api]: https://github.com/cisagov/Malcolm#api
   [ftl]: https://github.com/cisagov/Malcolm/blob/main/scripts/third-party-logs/README.md
   [itl]: https://github.com/cisagov/Malcolm#ingesting-third-party-logs
+  [las]: https://127.0.0.1/sessions
+  [lda]: https://127.0.0.1/dashboards
+  [lef]: https://127.0.0.1/extracted-files/
+  [lhn]: https://127.0.0.1/name-map-ui/
+  [luf]: https://127.0.0.1:488/
+  [lup]: https://127.0.0.1/upload
   [mal]: https://github.com/cisagov/Malcolm
   [nfa]: https://github.com/ansv46/nfa.git
   [upd]: https://github.com/cisagov/Malcolm#UpgradePlan
