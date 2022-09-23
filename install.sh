@@ -33,7 +33,6 @@ function error-exit-message() {
 }
 
 function update-ubuntu(){
-    info-message "Updating Ubuntu."
     info-message "Running apt update."
     # shellcheck disable=SC2024
     sudo apt update -qq > /dev/null 2>&1
