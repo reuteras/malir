@@ -138,4 +138,4 @@ test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
 
 info-message "Installation done."
-info-message "Start Malcolm by running ./script/start in the ~/Malcolm directory."
+info-message "Start Malcolm by running ./scripts/start in the ~/Malcolm directory."
