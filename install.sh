@@ -58,6 +58,7 @@ function install-google-chrome() {
         sudo apt -qq -f -y install > /dev/null 2>&1
         rm -f google-chrome-stable_current_amd64.deb
     fi
+    gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'google-chrome.desktop']"
     touch "${CONFIG_DIR}/google_done"
 }
 
