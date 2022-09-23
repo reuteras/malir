@@ -1,6 +1,7 @@
 #!/bin/bash
-#
 
+echo "wireshark-common wireshark-common/install-setuid boolean true" | \
+    sudo debconf-set-selections
 export DEBIAN_FRONTEND=noninteractive
 
 # Functions to print messages
@@ -49,7 +50,3 @@ sudo apt install -y -q \
     yara-doc \
     zip > /dev/null 2>&1
 
-if ! gsettings get org.gnome.shell favorite-apps | grep "org.gnome.Terminal.desktop" > /dev/null ; then
-    info-message "Add Terminal to favorite apps."
-    gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'org.gnome.Terminal.desktop']"
-fi
