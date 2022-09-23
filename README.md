@@ -17,6 +17,15 @@ Before the installation is finished you will have to logout one time (update gro
 
     ./install.sh
 
+The Malcolm scripts are interactive so you can select settings. Usually I use the defaults and only change:
+
+- Enable file extraction with Zeek? -> yes
+- Select file extraction behavior -> all
+- Select file preserveration behavior -> all
+- Scan extracted files with ClamAV -> yes
+- Scan extracted files with Yara -> yes
+- Scan extracted PE files with Capa? -> yes
+
 After the installation is finished you can optionally run the following command to install some additional tools. See the script for more information.
 
     ./tools.sh
