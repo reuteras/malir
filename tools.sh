@@ -13,7 +13,6 @@ sudo apt install -y -q \
 	p7zip \
 	python3-yara \
 	screen \
-	shareutils \
 	sqlite3 \
 	sqlitebrowser \
 	strace \
