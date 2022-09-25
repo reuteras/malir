@@ -58,7 +58,67 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
 - [ ] Zeek [Intelligence Framework][zif] in Malcolm?
 - [ ] Look at the Malcolm [api][api].
 - [ ] Read [Ingesting Third-Party Logs][itl] and [Forwarding Third-Party Logs to Malcolm][ftl]
-- [ ] Is it useful to have an [update][upd] script for this usecase?
+- [x] Is it useful to have an [update][upd] script for this usecase? - Don't write an update function. Create instance for every incident.
+- [ ] How verify that Logstash is up?
+- [ ] Read up about freq
+- [ ] Add support for Rita
+- [ ] *cidr-map.txt* - should always be set
+- [ ] Look at *malcolm_severity.yaml*
+- [ ] Do **git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git** in the directory zeek/intel. Read more on https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds and https://github.com/cisagov/Malcolm#zeek-intelligence-framework
+- [ ] STIX and TAXII - https://github.com/cisagov/Malcolm#stix-and-taxii
+- [ ] MISP - https://github.com/cisagov/Malcolm#misp
+- [ ] `event.dataset` set to `alerting` - https://github.com/cisagov/Malcolm#alerting
+- [ ] API - https://github.com/cisagov/Malcolm#api 
+- [ ] user-agent and others from examples
+- [ ] READ: https://github.com/cisagov/Malcolm/blob/main/docs/contributing/README.md
+
+```
+parseCookieValue=true
+parseQSValue=true
+parseSMB=true
+parseDNSRecordAll=true
+parseSMTP=true
+parseSMTPHeaderAll=true
+parseHTTPHeaderRequestAll=true
+parseHTTPHeaderResponseAll=true
+```
+
+Läs alla pcap-filer oavsett om de inte innehåller hela paket:
+
+    readTruncatedPackets=true
+
+Räkna även ut sha256
+
+    supportSha256=true
+
+
+    [git]: https://github.com/cisagov/Malcolm
+    [mal]: https://malcolm.fyi/
+
+Lägg till sektioner och utöka de framöver:
+
+```
+[headers-http-request]
+referer=type:string;count:true;unique:true
+```
+
+```
+[headers-http-response]
+location=type:string
+server=type:string
+```
+
+```
+[headers-email]
+x-priority=type:integer
+```
+
+```
+[value-actions]
+VTIP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip
+VTHOST=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host
+VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;c
+```
 
   [api]: https://github.com/cisagov/Malcolm#api
   [ftl]: https://github.com/cisagov/Malcolm/blob/main/scripts/third-party-logs/README.md
