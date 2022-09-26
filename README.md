@@ -1,6 +1,6 @@
 # malir
 
-My scripts to install [Malcolm][mal] for incident response (IR).
+My scripts to install [Malcolm][mal] for incident response (IR). The goal is not to have a lean version of Malcolm after installation, rather the goal is to have all bells and whistles in the included as well as adding some more and enable the maximal amout of indexing.
 
 The plan is to start with Malcom and add more functions and tune the installation to make Malcolm even more useful for investigations related to IR and cases where you have pcap-files to investigate.
 
@@ -55,22 +55,20 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
 - [ ] Try and see if [nfa][nfa] is useful.
 - [ ] Add more right-click functionality to Arkime
 - [ ] More plugins to Zeek?
-- [ ] Zeek [Intelligence Framework][zif] in Malcolm?
-- [ ] Look at the Malcolm [api][api].
+- [ ] Look at the Malcolm [api][api] and the examples searching for *user-agent* and more.
 - [ ] Read [Ingesting Third-Party Logs][itl] and [Forwarding Third-Party Logs to Malcolm][ftl]
 - [x] Is it useful to have an [update][upd] script for this usecase? - Don't write an update function. Create instance for every incident.
-- [ ] How verify that Logstash is up?
-- [ ] Read up about freq
-- [ ] Add support for Rita
+- [ ] How to verify that Logstash is up?
+- [ ] Read more about freq and how it is used in Malcolm.
+- [ ] Add support for Rita.
 - [ ] *cidr-map.txt* - should always be set
-- [ ] Look at *malcolm_severity.yaml*
-- [ ] Do **git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git** in the directory zeek/intel. Read more on https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds and https://github.com/cisagov/Malcolm#zeek-intelligence-framework
-- [ ] STIX and TAXII - https://github.com/cisagov/Malcolm#stix-and-taxii
-- [ ] MISP - https://github.com/cisagov/Malcolm#misp
-- [ ] `event.dataset` set to `alerting` - https://github.com/cisagov/Malcolm#alerting
-- [ ] API - https://github.com/cisagov/Malcolm#api 
-- [ ] user-agent and others from examples
-- [ ] READ: https://github.com/cisagov/Malcolm/blob/main/docs/contributing/README.md
+- [ ] Look at *malcolm_severity.yaml* and if I should tune the values for my usecases.
+- [ ] Do **git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git** in the directory zeek/intel. Read more at [Critical Path Security][cps] and in the Malcolm documentation for [Zeek Intelligence Framework][zif]
+- [ ] STIX and [TAXII][sta] in Malcolm
+- [ ] MISP [feeds][mis] in Malcolm
+- [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
+- [ ] Read the docs about [contributing][con].
+- [ ] Update Arkime conf:
 
 ```
 parseCookieValue=true
@@ -120,7 +118,10 @@ VTHOST=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus T
 VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;c
 ```
 
+  [ale]: https://github.com/cisagov/Malcolm#alerting
   [api]: https://github.com/cisagov/Malcolm#api
+  [con]: https://github.com/cisagov/Malcolm/blob/main/docs/contributing/README.md
+  [cps]: https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds
   [ftl]: https://github.com/cisagov/Malcolm/blob/main/scripts/third-party-logs/README.md
   [itl]: https://github.com/cisagov/Malcolm#ingesting-third-party-logs
   [las]: https://127.0.0.1/sessions
@@ -130,7 +131,9 @@ VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;c
   [luf]: https://127.0.0.1:488/
   [lup]: https://127.0.0.1/upload
   [mal]: https://github.com/cisagov/Malcolm
+  [mis]: https://github.com/cisagov/Malcolm#misp
   [nfa]: https://github.com/ansv46/nfa.git
   [san]: https://www.sans.org/blog/sans-zoom-backgrounds/
+  [sta]: https://github.com/cisagov/Malcolm#stix-and-taxii
   [upd]: https://github.com/cisagov/Malcolm#UpgradePlan
   [zif]: https://github.com/cisagov/Malcolm#zeek-intelligence-framework
