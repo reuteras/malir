@@ -114,6 +114,7 @@ function malcolm-background() {
 function malcolm-zeek-intel(){
     info-message "Clone Zeek intel from Critical Path Security"
     git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git
+    sed -i -e "s_/usr/local_/opt_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
     touch "${CONFIG_DIR}/zeek_intel_done"
 }
 
