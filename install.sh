@@ -110,6 +110,24 @@ function malcolm-background() {
     gsettings set org.gnome.desktop.background picture-uri "file:///home/${USER}/manir/resources/bg.jpg"
     touch "${CONFIG_DIR}/background_done"
 }
+
+function malcolm-zeek-intel(){
+    info-message "Clone Zeek intel from Critical Path Security"
+    git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git
+    touch "${CONFIG_DIR}/zeek_intel_done"
+}
+
+function malcolm-configure-arkime(){
+    info-message "Configure Arkime"
+    sed -i -e "s/parseQSValue=false/parseQSValue=true/" arkime/etc/config.ini
+    sed -i -e "s/supportSha256=false/supportSha256=true/" arkime/etc/config.ini
+    sed -i -e "s/maxReqBody=64/maxReqBody=1024/" arkime/etc/config.ini
+    sed -i -e "s/# implicit.*/includes=/opt/arkime/etc/config-local.ini/" arkime/etc/config.ini
+    cp ~/malir/resources/config-local.ini arkime/etc
+    cp ~/malir/resources/valueactions-virustotal.ini arkime/etc
+    cp ~/malir/resources/valueactions-urlscan.ini arkime/etc
+    touch "${CONFIG_DIR}/arkime_done"
+}
 # End of functions
 
 # Create directory for status of installation and setup
@@ -139,6 +157,8 @@ test -e "${CONFIG_DIR}/google_done" || install-google-chrome
 test -e "${CONFIG_DIR}/sound_done" || turn-off-sound
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
+test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
+test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
 test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
