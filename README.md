@@ -57,66 +57,22 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
 - [ ] More plugins to Zeek?
 - [ ] Look at the Malcolm [api][api] and the examples searching for *user-agent* and more.
 - [ ] Read [Ingesting Third-Party Logs][itl] and [Forwarding Third-Party Logs to Malcolm][ftl]
-- [x] Is it useful to have an [update][upd] script for this usecase? - Don't write an update function. Create instance for every incident.
+- [x] Is it useful to have an [update][upd] script for this usecase? - Don't write an update function. Create instance for every incident. - Adding script to update rules added (Zeek).
 - [ ] How to verify that Logstash is up?
 - [ ] Read more about freq and how it is used in Malcolm.
 - [ ] Add support for Rita.
 - [ ] *cidr-map.txt* - should always be set
 - [ ] Look at *malcolm_severity.yaml* and if I should tune the values for my usecases.
-- [ ] Do **git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git** in the directory zeek/intel. Read more at [Critical Path Security][cps] and in the Malcolm documentation for [Zeek Intelligence Framework][zif]
+- [x] Do **git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git** in the directory zeek/intel. Read more at [Critical Path Security][cps] and in the Malcolm documentation for [Zeek Intelligence Framework][zif]
 - [ ] STIX and [TAXII][sta] in Malcolm
 - [ ] MISP [feeds][mis] in Malcolm
 - [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
-- [ ] Read the docs about [contributing][con].
-- [ ] Update Arkime conf:
-
-```
-parseCookieValue=true
-parseQSValue=true
-parseSMB=true
-parseDNSRecordAll=true
-parseSMTP=true
-parseSMTPHeaderAll=true
-parseHTTPHeaderRequestAll=true
-parseHTTPHeaderResponseAll=true
-```
-
-Läs alla pcap-filer oavsett om de inte innehåller hela paket:
-
-    readTruncatedPackets=true
-
-Räkna även ut sha256
-
-    supportSha256=true
+- [x] Read the docs about [contributing][con].
+- [x] Update Arkime conf
 
 
-    [git]: https://github.com/cisagov/Malcolm
-    [mal]: https://malcolm.fyi/
 
-Lägg till sektioner och utöka de framöver:
 
-```
-[headers-http-request]
-referer=type:string;count:true;unique:true
-```
-
-```
-[headers-http-response]
-location=type:string
-server=type:string
-```
-
-```
-[headers-email]
-x-priority=type:integer
-```
-
-```
-[value-actions]
-VTIP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip
-VTHOST=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host
-VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;c
-```
 
   [ale]: https://github.com/cisagov/Malcolm#alerting
   [api]: https://github.com/cisagov/Malcolm#api
