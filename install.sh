@@ -91,7 +91,7 @@ function malcolm-maxmind() {
     read -sp "Maxmind GeoIP license key: " MAXMIND_KEY
     echo ""
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
-    if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" docker-compose.yml > /dev/null 2&>1 ; then
+    if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" docker-compose.yml > /dev/null 2>&1 ; then
         error-exit-message "Maxmind GeoIP License key not updated, exiting."
         exit
     fi
