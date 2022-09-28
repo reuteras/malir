@@ -37,6 +37,10 @@ Other scripts:
 
 ## Usage
 
+### Start
+
+    ./scripts/logs | grep "Pipelines running"
+
 Some useful Malcolm links on 127.0.0.1:
 
 - [Capture File and Log Archive Upload][lup]
@@ -45,6 +49,8 @@ Some useful Malcolm links on 127.0.0.1:
 - [Extracted files][lef]
 - [User admin][luf]
 - [Host and Network Segment Name Mapping][lhn]
+
+
 
 
 To upload files via command line connect to **sftp://USERNAME@localhost:8022/files/**.
