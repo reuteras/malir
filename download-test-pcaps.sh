@@ -15,10 +15,13 @@ cd ~/Downloads || exit
 
 echo "Download sample pcap files from https://www.malware-traffic-analysis.net/ and save them in ~/Downloads."
 for url in ${URLS} ; do
-    wget "${url}" > /dev/null
+    echo "Download ${url}"
+    wget "${url}" > /dev/null 2>&1
 done
 
 for file in *.pcap.zip ; do
-    unzip -P infected "${file}" > /dev/null
+    echo "Unzip ${file}"
+    unzip -P infected "${file}" > /dev/null 2>&1
+    rm "${file}"
  done
     
