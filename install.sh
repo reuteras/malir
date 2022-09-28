@@ -126,8 +126,6 @@ function malcolm-configure-arkime(){
     sed -i -e "s/spiDataMaxIndices=7/spiDataMaxIndices=10000/" arkime/etc/config.ini
     sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
     cp ~/malir/resources/config-local.ini arkime/etc
-    #cp ~/malir/resources/valueactions-virustotal.ini arkime/etc
-    #cp ~/malir/resources/valueactions-urlscan.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
 }
 # End of functions
