@@ -88,7 +88,10 @@ function malcolm-maxmind() {
     info-message "The build process needs your Maxmind API Key"
     info-message "Go to https://www.maxmind.com/"
     echo ""
-    read -sp "Maxmind GeoIP license key: " MAXMIND_KEY
+    MAXMIND_KEY=""
+    while [[ -z "${MAXMIND_KEY}" ]]; do
+        read -sp "Maxmind GeoIP license key: " MAXMIND_KEY
+    done
     echo ""
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" docker-compose.yml > /dev/null 2>&1 ; then
