@@ -1,0 +1,24 @@
+#!/bin/bash
+
+ULRS="https://www.malware-traffic-analysis.net/2022/03/21/2022-03-21-traffic-analysis-exercise.pcap.zip \
+    https://www.malware-traffic-analysis.net/2022/02/23/2022-02-23-traffic-analysis-exercise.pcap.zip \
+    https://www.malware-traffic-analysis.net/2022/01/07/2022-01-07-traffic-analysis-exercise.pcap.zip \
+    https://www.malware-traffic-analysis.net/2021/12/08/2021-12-ISC-Forensic-Challenge.pcap.zip \
+    https://www.malware-traffic-analysis.net/2021/10/22/2021-10-22-ISC-forensic-challenge-traffic.pcap.zip \
+    https://www.malware-traffic-analysis.net/2021/09/10/2021-09-10-traffic-analysis-exercise.pcap.zip \
+    https://www.malware-traffic-analysis.net/2021/08/19/2021-08-19-traffic-analysis-exercise.pcap.zip \
+    https://www.malware-traffic-analysis.net/2021/07/14/2021-07-traffic-analysis-exercise.pcap.zip \
+    https://www.malware-traffic-analysis.net/2021/02/08/2021-02-08-traffic-analysis-exercise.pcap.zip \
+    https://www.malware-traffic-analysis.net/2021/01/21/2021-01-21-traffic-analysis-exercise.pcap.zip"
+
+cd ~/Downloads || exit
+
+echo "Download sample pcap files from https://www.malware-traffic-analysis.net/ and save them in ~/Downloads."
+for url in "${URLS}" ; do
+    wget -O "${url}" > /dev/null
+done
+
+for file in *.pcap.zip ; do
+    unzip -P infected "${file}" > /dev/null
+ done
+    
