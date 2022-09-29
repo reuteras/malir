@@ -120,15 +120,16 @@ function malcolm-zeek-intel(){
     cd ~/Malcolm/zeek/intel || exit
     git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git
     cd ~/Malcolm || exit   
-    sed -i -e "s_/usr/local_/opt_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
+    sed -i -e "s_/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds_/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
     cd "${CDIR}"
     touch "${CONFIG_DIR}/zeek_intel_done"
 }
 
 function nginx-configure(){
     info-message "Configure nginx."
-    sed -i -e "s/^  upstream upload/i  upstream arkime-wise {\n    server arkime:8081;\n  }\n\n/"
-    sed -i -e "s/^    # Malcolm file upload/i    # Arkime wise\n    location ~* /wise/(.*) {\n      proxy_pass http://arkime-wise/$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n/"
+    cd ~/Malcolm || exit
+    sed -i -e "/  upstream upload/i \ \ upstream arkime-wise {\n    server arkime:8081;\n  }\n" nginx/nginx.conf
+    sed -i -e "/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n" nginx/nginx.conf
     touch "${CONFIG_DIR}/nginx_done"
 }
 
