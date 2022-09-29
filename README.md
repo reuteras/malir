@@ -39,7 +39,15 @@ Other scripts:
 
 ### Start
 
-    ./scripts/logs | grep "Pipelines running"
+Start Malcolm:
+
+    cd ~/Malcolm
+    ./script/start
+
+To check when Logstash is up and running you can run the following command in a separate terminal.
+
+    cd ~/Malcolm
+    clear; ./scripts/logs | grep "Pipelines running"
 
 Some useful Malcolm links on 127.0.0.1:
 
