@@ -1,19 +1,17 @@
 # malir
 
-My scripts to install [Malcolm][mal] for incident response (IR). The goal is not to have a lean version of Malcolm after installation, rather the goal is to have all bells and whistles in the included as well as adding some more and enable the maximal amout of indexing.
-
-The plan is to start with Malcom and add more functions and tune the installation to make Malcolm even more useful for investigations related to IR and cases where you have pcap-files to investigate.
+My scripts to install [Malcolm][mal] for incident response (IR). The goal is not to have a lean version of Malcolm after installation, rather the goal is to have all bells and whistles in the included as well as adding some more and enable the maximal amount of indexing.
 
 ## Installation
 
-This script is only tested on Ubuntu 22.04 LTS and I recommend running it in VM. The script will change default background during installation. Image is from [SANS][san].
+This script is only tested on Ubuntu 22.04 LTS and I recommend running it in VM. The script will change default background during installation. Image is from [SANS][san]. There are also other changes that you might not want on your regular computer.
 
 Start by cloning the repo and entering it. If you don't have git installed start with **sudo apt install -y git**.
 
     git clone https://github.com/reuteras/malir.git
     cd malir
 
-Before the installation is finished you will have to logout one time (update group membership for Docker) and reboot the computer one time (updated settings). You have to rerun the **install.sh** script after logging out and rebooting the computer. The **install.sh** script will tell you when to logout and reboot. To start the process run the following command in the manin
+Before the installation is finished you will have to logout one time (update group membership for Docker) and reboot the computer one time (updated settings). You have to rerun the **install.sh** script after logging out and rebooting the computer. The **install.sh** script will tell you when to logout and reboot. To start the process run the following command in the malir directory.
 
     ./install.sh
 
@@ -33,6 +31,8 @@ After the installation is finished you can optionally run the following command 
 Other scripts:
 
 - clean.sh - Clean apt and run **docker system prune**
+- download-test-pcaps.sh - Downloads some sample pcaps from [Malware-Traffic-Analysis.net][maw].
+- update.sh - Updates Zeek feeds. Must restart Malcolm afterwards.
 - zero.sh - Write zeros to free space. Don't do this if you have a large disk in the VM.
 
 ## Usage
@@ -49,9 +49,6 @@ Some useful Malcolm links on 127.0.0.1:
 - [Extracted files][lef]
 - [User admin][luf]
 - [Host and Network Segment Name Mapping][lhn]
-
-
-
 
 To upload files via command line connect to **sftp://USERNAME@localhost:8022/files/**.
 
@@ -93,6 +90,7 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
   [luf]: https://127.0.0.1:488/
   [lup]: https://127.0.0.1/upload
   [mal]: https://github.com/cisagov/Malcolm
+  [maw]: https://www.malware-traffic-analysis.net/
   [mis]: https://github.com/cisagov/Malcolm#misp
   [nfa]: https://github.com/ansv46/nfa.git
   [san]: https://www.sans.org/blog/sans-zoom-backgrounds/
