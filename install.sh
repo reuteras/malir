@@ -116,9 +116,20 @@ function malcolm-background() {
 
 function malcolm-zeek-intel(){
     info-message "Clone Zeek intel from Critical Path Security"
+    CDIR="$(pwd)"
+    cd ~/Malcolm/zeek/intel || exit
     git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git
+    cd ~/Malcolm || exit   
     sed -i -e "s_/usr/local_/opt_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
+    cd "${CDIR}"
     touch "${CONFIG_DIR}/zeek_intel_done"
+}
+
+function nginx-configure(){
+    info-message "Configure nginx."
+    sed -i -e "s/^  upstream upload/i  upstream arkime-wise {\n    server arkime:8081;\n  }\n\n/"
+    sed -i -e "s/^    # Malcolm file upload/i    # Arkime wise\n    location ~* /wise/(.*) {\n      proxy_pass http://arkime-wise/$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n/"
+    touch "${CONFIG_DIR}/nginx_done"
 }
 
 function malcolm-configure-arkime(){
@@ -128,6 +139,7 @@ function malcolm-configure-arkime(){
     sed -i -e "s/maxReqBody=64/maxReqBody=1024/" arkime/etc/config.ini
     sed -i -e "s/spiDataMaxIndices=7/spiDataMaxIndices=10000/" arkime/etc/config.ini
     sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
+    sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
     cp ~/malir/resources/config-local.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
 }
@@ -162,6 +174,7 @@ test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
+test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
 test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
