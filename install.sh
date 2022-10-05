@@ -144,6 +144,17 @@ function malcolm-configure-arkime(){
     cp ~/malir/resources/config-local.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
 }
+
+function malcolm-patch(){
+    if ! grep java-1.8.0-openjdk Dockerfiles/logstash.Dockerfile > /dev/null; then
+        info-message "Apply patch to Dockerfiles/logstash.Dockerfile."
+        sed -i "/glibc-headers\ \\/a\ \ \ \ \ \ java-1.8.0-openjdk \\" Dockerfiles/logstash.Dockerfile
+    else
+        info-message "Dockerfiles/logstash.Dockerfile has already been patched."
+        echo "No need to patch"
+    fi
+    touch "${CONFIG_DIR}/patch_done"
+}
 # End of functions
 
 # Create directory for status of installation and setup
@@ -176,6 +187,7 @@ test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
+test -e "${CONFIG_DIR}/patch_done" || malcolm-patch
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
 test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
