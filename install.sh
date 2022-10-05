@@ -146,12 +146,11 @@ function malcolm-configure-arkime(){
 }
 
 function malcolm-patch(){
-    if ! grep java-1.8.0-openjdk Dockerfiles/logstash.Dockerfile > /dev/null; then
-        info-message "Apply patch to Dockerfiles/logstash.Dockerfile."
-        sed -i "/glibc-headers\ \\/a\ \ \ \ \ \ java-1.8.0-openjdk \\" Dockerfiles/logstash.Dockerfile
+    if ! grep java-1.8.0-openjdk ~/Malcolm/Dockerfiles/logstash.Dockerfile > /dev/null; then
+        info-message "Apply patch to ~/Malcolm/Dockerfiles/logstash.Dockerfile."
+        sed -i "/glibc-headers\ \\/a\ \ \ \ \ \ java-1.8.0-openjdk \\" ~/Malcolm/Dockerfiles/logstash.Dockerfile
     else
         info-message "Dockerfiles/logstash.Dockerfile has already been patched."
-        echo "No need to patch"
     fi
     touch "${CONFIG_DIR}/patch_done"
 }
