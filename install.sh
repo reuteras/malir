@@ -155,7 +155,7 @@ if ! gsettings get org.gnome.shell favorite-apps | grep "org.gnome.Terminal.desk
 fi
 
 # Check for membership in group docker
-if ! grep "docker:" /etc/group | grep ":${USER}" > /dev/null; then
+if ! grep "docker:" /etc/group | grep -E "(,|:)${USER}" > /dev/null; then
     info-message "Add current user to group docker."
     grep docker: /etc/group > /dev/null 2>&1 || sudo groupadd docker
     sudo usermod -aG docker "$USER" || exit
