@@ -80,6 +80,10 @@ function malcolm-build() {
     info-message "This will take some time..."
     ./scripts/build.sh
     info-message "Build done."
+    read -rp "Verify build status above. Use ctrl-c on error." dummy
+    if [[ ${dummy} == "exit" ]]; then
+        exit
+    fi
     touch "${CONFIG_DIR}/build_done"
 }
 
@@ -90,7 +94,7 @@ function malcolm-maxmind() {
     echo ""
     MAXMIND_KEY=""
     while [[ -z "${MAXMIND_KEY}" ]]; do
-        read -sp "Maxmind GeoIP license key: " MAXMIND_KEY
+        read -srp "Maxmind GeoIP license key: " MAXMIND_KEY
     done
     echo ""
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
@@ -121,7 +125,7 @@ function malcolm-zeek-intel(){
     git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git
     cd ~/Malcolm || exit   
     sed -i -e "s_/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds_/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
-    cd "${CDIR}"
+    cd "${CDIR}" || exit
     touch "${CONFIG_DIR}/zeek_intel_done"
 }
 
