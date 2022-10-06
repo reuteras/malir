@@ -64,6 +64,7 @@ function install-google-chrome() {
 # Function to configure Malcolm
 function malcolm-configure() {
     info-message "Starting interactive configuration of Malcolm"
+    cd ~/Malcolm || exit
     sudo python3 scripts/install.py
     python3 scripts/install.py --configure
     sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'false'/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'true'/" docker-compose.yml
@@ -78,6 +79,7 @@ function malcolm-configure() {
 function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
+    cd ~/Malcolm || exit
     ./scripts/build.sh
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
@@ -92,9 +94,10 @@ function malcolm-maxmind() {
     info-message "The build process needs your Maxmind API Key"
     info-message "Go to https://www.maxmind.com/"
     echo ""
+    cd ~/Malcolm || exit
     MAXMIND_KEY=""
     while [[ -z "${MAXMIND_KEY}" ]]; do
-        read -srp "Maxmind GeoIP license key: " MAXMIND_KEY
+        read -rp "Maxmind GeoIP license key (will echo key): " MAXMIND_KEY
     done
     echo ""
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
@@ -105,8 +108,16 @@ function malcolm-maxmind() {
     touch "${CONFIG_DIR}/maxmind_done"
 }
 
+function malcolm-docker-compose() {
+    info-message "Increase retries in docker-compose.yml"
+    sed -i -e "s/retries: 3$/retries: 40/" ~/Malcolm/docker-compose.yml
+    info-message "Done increasing retries in docker-compose.yml"
+    touch "${CONFIG_DIR}/docker_compose_done"
+}
+
 function malcolm-authentication() {
     info-message "Start authentication setup." 
+    cd ~/Malcolm || exit
     ./scripts/auth_setup
     info-message "Authentication done." 
     touch "${CONFIG_DIR}/authentication_done"
@@ -139,6 +150,7 @@ function nginx-configure(){
 
 function malcolm-configure-arkime(){
     info-message "Configure Arkime"
+    cd ~/Malcolm || exit
     sed -i -e "s/parseQSValue=false/parseQSValue=true/" arkime/etc/config.ini
     sed -i -e "s/supportSha256=false/supportSha256=true/" arkime/etc/config.ini
     sed -i -e "s/maxReqBody=64/maxReqBody=1024/" arkime/etc/config.ini
@@ -152,6 +164,7 @@ function malcolm-configure-arkime(){
 # End of functions
 
 # Create directory for status of installation and setup
+info-message "Start installation of Malcolm and exta tools."
 test -d "${CONFIG_DIR}" || mkdir -p "${CONFIG_DIR}"
 
 if ! gsettings get org.gnome.shell favorite-apps | grep "org.gnome.Terminal.desktop" > /dev/null ; then
@@ -171,13 +184,13 @@ fi
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
 test -d Malcolm || git clone https://github.com/cisagov/Malcolm.git
-cd Malcolm || exit
 
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
 test -e "${CONFIG_DIR}/google_done" || install-google-chrome
 test -e "${CONFIG_DIR}/sound_done" || turn-off-sound
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
+test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
 test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
