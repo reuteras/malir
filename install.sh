@@ -80,7 +80,7 @@ function malcolm-build() {
     info-message "This will take some time..."
     ./scripts/build.sh
     info-message "Build done."
-    read -rp "Verify build status above. Use ctrl-c on error." dummy
+    read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
         exit
     fi
