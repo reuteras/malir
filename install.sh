@@ -67,6 +67,7 @@ function malcolm-configure() {
     cd ~/Malcolm || exit
     sudo python3 scripts/install.py
     python3 scripts/install.py --configure
+    ./scripts/auth_setup
     sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'false'/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'true'/" docker-compose.yml
     sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'true'/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'false'/" docker-compose.yml
     info-message "Configuration done."
