@@ -164,7 +164,7 @@ function malcolm-configure-arkime(){
 # End of functions
 
 # Create directory for status of installation and setup
-info-message "Start installation of Malcolm and exta tools."
+info-message "Start installation of Malcolm and extra tools."
 test -d "${CONFIG_DIR}" || mkdir -p "${CONFIG_DIR}"
 
 if ! gsettings get org.gnome.shell favorite-apps | grep "org.gnome.Terminal.desktop" > /dev/null ; then
