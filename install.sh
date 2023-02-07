@@ -111,6 +111,9 @@ function malcolm-maxmind() {
 function malcolm-docker-compose() {
     info-message "Increase retries in docker-compose.yml"
     sed -i -e "s/retries: 3$/retries: 40/" ~/Malcolm/docker-compose.yml
+    if ! dpkg -l | grep docker-compose > /dev/null ; then
+        sudo apt install -yqq docker-compose > /dev/null 2>&1
+    fi
     info-message "Done increasing retries in docker-compose.yml"
     touch "${CONFIG_DIR}/docker_compose_done"
 }
