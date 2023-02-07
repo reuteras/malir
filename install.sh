@@ -32,13 +32,6 @@ function error-exit-message() {
     touch "${CONFIG_DIR}/sound_done"
 }
 
-# Install docker.io and docker-compose
- function install-docker() {
-	info-message "Install docker.io and docker-compose."
-    sudo apt install -yqq docker.io docker-compose > /dev/null 2>&1
-    touch "${CONFIG_DIR}/docker_done"
-}
-
 function update-ubuntu(){
     info-message "Running apt update."
     # shellcheck disable=SC2024
@@ -203,7 +196,6 @@ fi
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
 test -e "${CONFIG_DIR}/google_done" || install-google-chrome
 test -e "${CONFIG_DIR}/sound_done" || turn-off-sound
-test -e "${CONFIG_DIR}/docker_done" || install-docker
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
