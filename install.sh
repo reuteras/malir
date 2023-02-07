@@ -111,7 +111,6 @@ function malcolm-maxmind() {
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" docker-compose.yml > /dev/null 2>&1 ; then
         error-exit-message "Maxmind GeoIP License key not updated, exiting."
-        exit
     fi
     touch "${CONFIG_DIR}/maxmind_done"
 }
@@ -192,6 +191,10 @@ fi
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
 test -d Malcolm || git clone https://github.com/cisagov/Malcolm.git
+
+if [[ "$(uname -m)" == "aarch64" ]]; then
+    cp ~/malir/aarch64/*Dockerfile "${HOME}"/Malcolm/Dockerfiles
+fi
 
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
 test -e "${CONFIG_DIR}/google_done" || install-google-chrome
