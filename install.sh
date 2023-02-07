@@ -192,8 +192,12 @@ fi
 cd "${HOME}" || exit
 test -d Malcolm || git clone https://github.com/cisagov/Malcolm.git
 
-if [[ "$(uname -m)" == "aarch64" ]]; then
+if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
+    info-message "Fixes for aarch64"
+    cd ~/Malcolm || exit
     cp ~/malir/aarch64/*Dockerfile "${HOME}"/Malcolm/Dockerfiles
+    sed -i -e "s/amd64/arm64/" scripts/install.py
+    touch "${CONFIG_DIR}/aarch64_done"
 fi
 
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
