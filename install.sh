@@ -1,6 +1,8 @@
 #!/bin/bash
 
 CONFIG_DIR="${HOME}/.config/manir"
+PATH="${PATH}:/usr/libexec/docker/cli-plugins"
+export PATH
 export DEBIAN_FRONTEND=noninteractive
 
 #
