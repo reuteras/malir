@@ -72,7 +72,6 @@ RUN sed -i "s/bullseye main/bullseye main contrib non-free/g" /etc/apt/sources.l
         libgeoip1 \
         libhiredis0.14 \
         libhtp2 \
-        libhyperscan5 \
         libjansson4 \
         liblua5.1-0 \
         libluajit-5.1-2 \

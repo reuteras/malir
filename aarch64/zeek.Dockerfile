@@ -1,4 +1,4 @@
-FROM debian:11-slim
+FROM ubuntu:22.04
 
 # Copyright (c) 2023 Battelle Energy Alliance, LLC.  All rights reserved.
 
