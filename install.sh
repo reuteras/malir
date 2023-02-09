@@ -208,7 +208,7 @@ test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
-test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
+#test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
 
 info-message "Installation done."
