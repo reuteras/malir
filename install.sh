@@ -197,6 +197,7 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
     sed -i -e "s/amd64/arm64/" scripts/install.py
     for dockerfile in Dockerfiles/*; do
         sed -i -e "s/amd64/arm64/" "${dockerfile}"
+        sed -i -e "s#/tini /usr#/tini-arm64 /usr#" "${dockerfile}"
         sed -i -e "s/d7f4c0886eb85249ad05ed592902fa6865bb9d70/0003a1f84a4bc547b6ff3d88347916e4b96a2177/" "${dockerfile}"
     done
     touch "${CONFIG_DIR}/aarch64_done"
