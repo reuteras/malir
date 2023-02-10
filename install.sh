@@ -49,14 +49,21 @@ function update-ubuntu(){
 
 # Install Google Chrome
 function install-google-chrome() {
-    if ! dpkg --status google-chrome-stable > /dev/null 2>&1 ; then
-        info-message "Installing Google Chrome."
-        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        # shellcheck disable=SC2024
-        sudo dpkg -i google-chrome-stable_current_amd64.deb > /dev/null 2>&1 || true
-        # shellcheck disable=SC2024
-        sudo apt -qq -f -y install > /dev/null 2>&1
-        rm -f google-chrome-stable_current_amd64.deb
+    if [[ "$(uname -m)" == "aarch64" ]]; then
+        if ! dpkg --status google-chrome-stable > /dev/null 2>&1 ; then
+            info-message "Installing Google Chrome."
+            wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            # shellcheck disable=SC2024
+            sudo dpkg -i google-chrome-stable_current_amd64.deb > /dev/null 2>&1 || true
+            # shellcheck disable=SC2024
+            sudo apt -qq -f -y install > /dev/null 2>&1
+            rm -f google-chrome-stable_current_amd64.deb
+        fi
+    else
+        if ! dpkg --status chromium-browser > /dev/null 2>&1 ; then
+            info-message "Installing Google Chrome."
+            sudo apt install -yqq chromium-browser > /dev/null 2>&1
+        fi
     fi
     info-message "Adding Google Chrome to favorites."
     gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'google-chrome.desktop']"
