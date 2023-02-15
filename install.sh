@@ -127,14 +127,6 @@ function malcolm-docker-compose() {
     touch "${CONFIG_DIR}/docker_compose_done"
 }
 
-function malcolm-authentication() {
-    info-message "Start authentication setup." 
-    cd ~/Malcolm || exit
-    ./scripts/auth_setup
-    info-message "Authentication done." 
-    touch "${CONFIG_DIR}/authentication_done"
-}
-
 function malcolm-background() {
     info-message "Set background." 
     gsettings set org.gnome.desktop.background picture-uri "file:///home/${USER}/manir/resources/bg.jpg"
@@ -220,7 +212,6 @@ test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
-#test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
 
 info-message "Installation done."
