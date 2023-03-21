@@ -59,6 +59,24 @@ Some useful Malcolm links on 127.0.0.1:
 
 To upload files via command line connect to **sftp://USERNAME@localhost:8022/files/**.
 
+## Solutions
+
+### Docker build failures
+
+The easiest solution is to just `cd ~/Malcolm` and then run `./scripts/start` which will build missing images.
+
+Otherwise you can use this **very** ugly bash line to list missing images (the last **grep -v** will miss lines - only tested for my latest problem). You have to build them in the order they appear in *~/Malcolm/docker-compose.yml*.
+
+```bash
+for image in $(grep image: ~/Malcolm/docker-compose.yml | cut -f2 -d: | tr -d ' '| sort | uniq  | grep -vE "$(docker images -a | cut -f1 -d\  | grep '/' | sort | uniq | tr '\n' '|')NOMATCH"); do grep -m1 -B5 $image ~/Malcolm/docker-compose.yml ; done | grep -v ": [0-9A-Za-z.]" | grep -v "build:"  | tr -d " :"
+```
+
+When building is done do `touch ~/.config/manir/build_done` and run install.sh again.
+
+### Netbox container fails
+
+If netbox fails and your not using it you can remove the line with **jq** and the next line with **mv** and then try again.
+
 ## TODO
 
 - [ ] Add support to tag TOR exit nodes.
