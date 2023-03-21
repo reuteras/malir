@@ -1,6 +1,8 @@
 #!/bin/bash
 
 CONFIG_DIR="${HOME}/.config/manir"
+PATH="${PATH}:/usr/libexec/docker/cli-plugins"
+export PATH
 export DEBIAN_FRONTEND=noninteractive
 
 #
@@ -47,14 +49,21 @@ function update-ubuntu(){
 
 # Install Google Chrome
 function install-google-chrome() {
-    if ! dpkg --status google-chrome-stable > /dev/null 2>&1 ; then
-        info-message "Installing Google Chrome."
-        wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        # shellcheck disable=SC2024
-        sudo dpkg -i google-chrome-stable_current_amd64.deb > /dev/null 2>&1 || true
-        # shellcheck disable=SC2024
-        sudo apt -qq -f -y install > /dev/null 2>&1
-        rm -f google-chrome-stable_current_amd64.deb
+    if [[ "$(uname -m)" == "aarch64" ]]; then
+        if ! dpkg --status google-chrome-stable > /dev/null 2>&1 ; then
+            info-message "Installing Google Chrome."
+            wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            # shellcheck disable=SC2024
+            sudo dpkg -i google-chrome-stable_current_amd64.deb > /dev/null 2>&1 || true
+            # shellcheck disable=SC2024
+            sudo apt -qq -f -y install > /dev/null 2>&1
+            rm -f google-chrome-stable_current_amd64.deb
+        fi
+    else
+        if ! dpkg --status chromium-browser > /dev/null 2>&1 ; then
+            info-message "Installing Google Chrome."
+            sudo apt install -yqq chromium-browser > /dev/null 2>&1
+        fi
     fi
     info-message "Adding Google Chrome to favorites."
     gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'google-chrome.desktop']"
@@ -104,7 +113,6 @@ function malcolm-maxmind() {
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" docker-compose.yml
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" docker-compose.yml > /dev/null 2>&1 ; then
         error-exit-message "Maxmind GeoIP License key not updated, exiting."
-        exit
     fi
     touch "${CONFIG_DIR}/maxmind_done"
 }
@@ -112,16 +120,11 @@ function malcolm-maxmind() {
 function malcolm-docker-compose() {
     info-message "Increase retries in docker-compose.yml"
     sed -i -e "s/retries: 3$/retries: 40/" ~/Malcolm/docker-compose.yml
+    if ! dpkg -l | grep -v docker-compose-plugin | grep docker-compose > /dev/null ; then
+        sudo apt install -yqq docker-compose > /dev/null 2>&1
+    fi
     info-message "Done increasing retries in docker-compose.yml"
     touch "${CONFIG_DIR}/docker_compose_done"
-}
-
-function malcolm-authentication() {
-    info-message "Start authentication setup." 
-    cd ~/Malcolm || exit
-    ./scripts/auth_setup
-    info-message "Authentication done." 
-    touch "${CONFIG_DIR}/authentication_done"
 }
 
 function malcolm-background() {
@@ -165,7 +168,7 @@ function malcolm-configure-arkime(){
 # End of functions
 
 # Create directory for status of installation and setup
-info-message "Start installation of Malcolm and exta tools."
+info-message "Start installation of Malcolm and extra tools."
 test -d "${CONFIG_DIR}" || mkdir -p "${CONFIG_DIR}"
 
 if ! gsettings get org.gnome.shell favorite-apps | grep "org.gnome.Terminal.desktop" > /dev/null ; then
@@ -186,6 +189,19 @@ fi
 cd "${HOME}" || exit
 test -d Malcolm || git clone https://github.com/cisagov/Malcolm.git
 
+if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
+    info-message "Fixes for aarch64"
+    cd ~/Malcolm || exit
+    cp ~/malir/aarch64/*Dockerfile "${HOME}"/Malcolm/Dockerfiles
+    sed -i -e "s/amd64/arm64/" scripts/install.py
+    for dockerfile in Dockerfiles/*; do
+        sed -i -e "s/amd64/arm64/" "${dockerfile}"
+        sed -i -e "s#/tini /usr#/tini-arm64 /usr#" "${dockerfile}"
+        sed -i -e "s/d7f4c0886eb85249ad05ed592902fa6865bb9d70/0003a1f84a4bc547b6ff3d88347916e4b96a2177/" "${dockerfile}"
+    done
+    touch "${CONFIG_DIR}/aarch64_done"
+fi
+
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
 test -e "${CONFIG_DIR}/google_done" || install-google-chrome
 test -e "${CONFIG_DIR}/sound_done" || turn-off-sound
@@ -196,7 +212,6 @@ test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
-test -e "${CONFIG_DIR}/authentication_done" || malcolm-authentication
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
 
 info-message "Installation done."
