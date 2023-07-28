@@ -44,6 +44,8 @@ function update-ubuntu(){
         info-message "APT busy. Will retry in 10 seconds."
         sleep 10
     done
+    info-message "Running apt install python3-dotenv."
+    sudo DEBIAN_FRONTEND=noninteractive apt -y install python3-dotenv > /dev/null 2>&1
     touch "${CONFIG_DIR}/ubuntu_done"
 }
 
