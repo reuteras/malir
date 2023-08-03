@@ -4,7 +4,7 @@ My scripts to install [Malcolm][mal] for incident response (IR). The goal is not
 
 ## Installation
 
-This script is only tested on Ubuntu 22.04 LTS and I recommend running it in VM. The script will change default background during installation. Image is from [SANS][san]. There are also other changes that you might not want on your regular computer.
+This script is only tested on Ubuntu 22.04 LTS and I recommend running it in avVM. The script will change default background during installation. Image is from [SANS][san]. There are also other changes that you might not want on your regular computer.
 
 Start by cloning the repo and entering it. If you don't have git installed start with **sudo apt install -y git**.
 
@@ -17,6 +17,9 @@ Before the installation is finished you will have to logout one time (update gro
 
 The Malcolm scripts are interactive so you can select settings. Usually I use the defaults and only change:
 
+- "docker info" failed, attempt to install Docker? (Y/n): 
+- Attempt to install Docker using official repositories? (Y/n): n
+- Docker not installed via official repositories. Attempt to install Docker via convenience script (please read https://github.com/docker/docker-install)? (y/N): y
 - Enable file extraction with Zeek? -> yes
 - Select file extraction behavior -> all
 - Select file preserveration behavior -> all
