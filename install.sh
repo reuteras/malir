@@ -193,12 +193,11 @@ test -d Malcolm || git clone https://github.com/cisagov/Malcolm.git
 if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
     info-message "Fixes for aarch64"
     cd ~/Malcolm || exit
-    cp ~/malir/aarch64/*Dockerfile "${HOME}"/Malcolm/Dockerfiles
+    #cp ~/malir/aarch64/*Dockerfile "${HOME}"/Malcolm/Dockerfiles
     sed -i -e "s/amd64/arm64/" scripts/install.py
     for dockerfile in Dockerfiles/*; do
         sed -i -e "s/amd64/arm64/" "${dockerfile}"
-        sed -i -e "s#/tini /usr#/tini-arm64 /usr#" "${dockerfile}"
-        sed -i -e "s/d7f4c0886eb85249ad05ed592902fa6865bb9d70/0003a1f84a4bc547b6ff3d88347916e4b96a2177/" "${dockerfile}"
+        sed -i -e "s/7a79496cf8ad899b99a719355d4db27422396735/e4801adb518ffedfd930ab3a82db042cb78a0a41/" "${dockerfile}"
     done
     touch "${CONFIG_DIR}/aarch64_done"
 fi
