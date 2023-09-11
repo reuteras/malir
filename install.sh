@@ -194,9 +194,9 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
     info-message "Fixes for aarch64"
     cd ~/Malcolm || exit
     #cp ~/malir/aarch64/*Dockerfile "${HOME}"/Malcolm/Dockerfiles
-    sed -i -e "s/amd64/arm64/" scripts/install.py
+    sed -i -e "s/amd64/arm64/g" scripts/install.py
     for dockerfile in Dockerfiles/*; do
-        sed -i -e "s/amd64/arm64/" "${dockerfile}"
+        sed -i -e "s/amd64/arm64/g" "${dockerfile}"
         sed -i -e "s/7a79496cf8ad899b99a719355d4db27422396735/e4801adb518ffedfd930ab3a82db042cb78a0a41/" "${dockerfile}"
     done
     touch "${CONFIG_DIR}/aarch64_done"
