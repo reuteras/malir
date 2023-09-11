@@ -195,9 +195,16 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
     cd ~/Malcolm || exit
     #cp ~/malir/aarch64/*Dockerfile "${HOME}"/Malcolm/Dockerfiles
     sed -i -e "s/amd64/arm64/g" scripts/install.py
+	SUPERSONIC_VERSION=$(grep "ENV SUPERCRONIC_VERSION" Dockerfiles/zeek.Dockerfile | grep -oE "[0-9.]+")
+	SUPERCRONIC_URL=$(grep "ENV SUPERCRONIC_URL" Dockerfiles/zeek.Dockerfile | \
+		grep -oE 'https[^"]+' | 
+		sed -E "s/SUPERCRONIC_VERSION/$SUPERSONIC_VERSION/" | \
+		sed -E "s/amd64/arm64/g" | \
+		tr -d '$')
+	SUPERSONIC_SHA1SUM=$(curl -L -s "${SUPERCRONIC_URL}" -o - | shasum | awk '{print $1}')
     for dockerfile in Dockerfiles/*; do
         sed -i -e "s/amd64/arm64/g" "${dockerfile}"
-        sed -i -e "s/7a79496cf8ad899b99a719355d4db27422396735/e4801adb518ffedfd930ab3a82db042cb78a0a41/" "${dockerfile}"
+        sed -i -e "s/ENV SUPERCRONIC_SHA1SUM .*/ENV SUPERCRONIC_SHA1SUM "'"'"${SUPERSONIC_SHA1SUM}"'"'"/" "${dockerfile}"
     done
     touch "${CONFIG_DIR}/aarch64_done"
 fi
