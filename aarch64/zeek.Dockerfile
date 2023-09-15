@@ -4,11 +4,11 @@ FROM debian:12-slim
 
 LABEL maintainer="malcolm@inl.gov"
 LABEL org.opencontainers.image.authors='malcolm@inl.gov'
-LABEL org.opencontainers.image.url='https://github.com/cisagov/Malcolm'
-LABEL org.opencontainers.image.documentation='https://github.com/cisagov/Malcolm/blob/main/README.md'
-LABEL org.opencontainers.image.source='https://github.com/cisagov/Malcolm'
-LABEL org.opencontainers.image.vendor='Cybersecurity and Infrastructure Security Agency'
-LABEL org.opencontainers.image.title='ghcr.io/cisagov/malcolm/zeek'
+LABEL org.opencontainers.image.url='https://github.com/idaholab/Malcolm'
+LABEL org.opencontainers.image.documentation='https://github.com/idaholab/Malcolm/blob/main/README.md'
+LABEL org.opencontainers.image.source='https://github.com/idaholab/Malcolm'
+LABEL org.opencontainers.image.vendor='Idaho National Laboratory'
+LABEL org.opencontainers.image.title='ghcr.io/idaholab/malcolm/zeek'
 LABEL org.opencontainers.image.description='Malcolm container providing Zeek'
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -32,7 +32,7 @@ ENV PUSER_RLIMIT_UNLOCK true
 
 # for download and install
 ARG ZEEK_LTS=
-ARG ZEEK_VERSION=5.2.2-0
+ARG ZEEK_VERSION=6.0.1-0
 
 ENV ZEEK_LTS $ZEEK_LTS
 ENV ZEEK_VERSION $ZEEK_VERSION
@@ -114,16 +114,16 @@ RUN export DEBARCH=$(dpkg --print-architecture) && \
       cd /tmp/zeek-packages && \
       if [ -n "${ZEEK_LTS}" ]; then ZEEK_LTS="-lts"; fi && export ZEEK_LTS && \
       curl -sSL --remote-name-all \
-        "https://download.zeek.org/binary-packages/Debian_12/arm64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_arm64.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/arm64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_arm64.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/arm64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_arm64.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/arm64/zeek${ZEEK_LTS}-spicy-dev_${ZEEK_VERSION}_arm64.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/arm64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_arm64.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/arm64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_arm64.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/all/zeek${ZEEK_LTS}-client_${ZEEK_VERSION}_all.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/all/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_all.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/all/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_all.deb" \
-        "https://download.zeek.org/binary-packages/Debian_12/all/zeek${ZEEK_LTS}-btest-data_${ZEEK_VERSION}_all.deb" && \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/arm64/libbroker${ZEEK_LTS}-dev_${ZEEK_VERSION}_arm64.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/arm64/zeek${ZEEK_LTS}-core-dev_${ZEEK_VERSION}_arm64.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/arm64/zeek${ZEEK_LTS}-core_${ZEEK_VERSION}_arm64.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/arm64/zeek${ZEEK_LTS}-spicy-dev_${ZEEK_VERSION}_arm64.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/arm64/zeek${ZEEK_LTS}_${ZEEK_VERSION}_arm64.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/arm64/zeekctl${ZEEK_LTS}_${ZEEK_VERSION}_arm64.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/all/zeek${ZEEK_LTS}-client_${ZEEK_VERSION}_all.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/all/zeek${ZEEK_LTS}-zkg_${ZEEK_VERSION}_all.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/all/zeek${ZEEK_LTS}-btest_${ZEEK_VERSION}_all.deb" \
+        "https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04/all/zeek${ZEEK_LTS}-btest-data_${ZEEK_VERSION}_all.deb" && \
       dpkg -i ./*.deb && \
     curl -fsSLO "$SUPERCRONIC_URL" && \
       echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - && \
