@@ -206,7 +206,7 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
         sed -i -e "s/ENV SUPERCRONIC_SHA1SUM .*/ENV SUPERCRONIC_SHA1SUM "'"'"${SUPERSONIC_SHA1SUM}"'"'"/" "${dockerfile}"
     done
 	sed -i -e "s#https://download.zeek.org/binary-packages/Debian_12#https://download.opensuse.org/repositories/security:/zeek/xUbuntu_22.04#" Dockerfiles/zeek.Dockerfile
-	sed -i -e "s/5.2.2-0/6.0.0-0/" Dockerfiles/zeek.Dockerfile
+	sed -i -e "s/5.2.2-0/6.0.1-0/" Dockerfiles/zeek.Dockerfile
     touch "${CONFIG_DIR}/aarch64_done"
 fi
 
