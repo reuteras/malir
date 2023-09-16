@@ -2,6 +2,7 @@
 
 CONFIG_DIR="${HOME}/.config/manir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
+MALCOLM_VERSION="v23.09.0"
 export PATH
 export DEBIAN_FRONTEND=noninteractive
 
@@ -188,7 +189,11 @@ fi
 
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
-test -d Malcolm || git clone https://github.com/cisagov/Malcolm.git
+if !  test -d Malcolm ; then
+	git clone https://github.com/cisagov/Malcolm.git
+	cd Malcolm || exit
+	git checkout tags/"$MALCOLM_VERSION" -b main
+fi
 
 if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
     info-message "Fixes for aarch64"
