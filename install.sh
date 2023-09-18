@@ -66,7 +66,7 @@ function install-google-chrome() {
 function malcolm-configure() {
     info-message "Starting interactive configuration of Malcolm"
     cd ~/Malcolm || exit
-    echo "y" | sudo python3 scripts/install.py --defaults \
+    echo "n" | sudo python3 scripts/install.py --defaults \
         --dark-mode true \
         --suricata-rule-update true \
 		--extracted-file-server true \
