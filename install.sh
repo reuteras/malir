@@ -201,7 +201,7 @@ if !  test -d Malcolm ; then
     git clone https://github.com/cisagov/Malcolm.git
     cd Malcolm || exit
 	git fetch --all --tags
-    git checkout tags/"$MALCOLM_VERSION"
+    git checkout tags/"$MALCOLM_VERSION" | grep Note
 fi
 
 if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
