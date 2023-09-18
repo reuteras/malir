@@ -100,7 +100,11 @@ function malcolm-build() {
     fi
     cd ~/Malcolm || exit
     sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
-    ./scripts/build.sh
+    if [[ "$(uname -m)" == "aarch64" ]]; then
+        echo "y" | ./scripts/build.sh
+    else
+        ./scripts/build.sh
+    fi
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
