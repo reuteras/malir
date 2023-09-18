@@ -27,7 +27,7 @@ function error-exit-message() {
 # Turn off sound on start up
  function turn-off-sound() {
     if [[ ! -e /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override ]]; then
-	info-message "Turn off sound."
+    info-message "Turn off sound."
         echo -e '[com.canonical.unity-greeter]\nplay-ready-sound = false' | \
         sudo tee -a /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override > /dev/null
         sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
@@ -78,11 +78,11 @@ function malcolm-configure() {
     info-message "Starting interactive configuration of Malcolm"
     cd ~/Malcolm || exit
     sudo python3 scripts/install.py --defaults \
-		--dark-mode true \
-		--suricata-rule-update true \
-		--file-extraction all \
-		--file-preservation quarantined \
-		--file-scan-rule-update true
+        --dark-mode true \
+        --suricata-rule-update true \
+        --file-extraction all \
+        --file-preservation quarantined \
+        --file-scan-rule-update true
     ./scripts/auth_setup
     sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'false'/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'true'/" docker-compose.yml
     sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'true'/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'false'/" docker-compose.yml
@@ -96,13 +96,13 @@ function malcolm-configure() {
 function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
-	if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
-		# Need to build this image for aarch64
-		cd ~ || exit
-		git clone https://github.com/mmguero-dev/jekyll-serve.git
-		cd jekyll-serve || exit
-		docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
-	fi
+    if [[ "$(uname -m)" == "aarch64" ]]; then
+        # Need to build this image for aarch64
+        cd ~ || exit
+        git clone https://github.com/mmguero-dev/jekyll-serve.git
+        cd jekyll-serve || exit
+        docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
+    fi
     cd ~/Malcolm || exit
     ./scripts/build.sh
     info-message "Build done."
@@ -202,22 +202,22 @@ fi
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
 if !  test -d Malcolm ; then
-	git clone https://github.com/cisagov/Malcolm.git
-	cd Malcolm || exit
-	git checkout tags/"$MALCOLM_VERSION" -b main
+    git clone https://github.com/cisagov/Malcolm.git
+    cd Malcolm || exit
+    git checkout tags/"$MALCOLM_VERSION" -b main
 fi
 
 if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
     info-message "Fixes for aarch64"
     cd ~/Malcolm || exit
     sed -i -e "s/amd64/arm64/g" scripts/install.py
-	SUPERSONIC_VERSION=$(grep "ENV SUPERCRONIC_VERSION" Dockerfiles/zeek.Dockerfile | grep -oE "[0-9.]+")
-	SUPERCRONIC_URL=$(grep "ENV SUPERCRONIC_URL" Dockerfiles/zeek.Dockerfile | \
-		grep -oE 'https[^"]+' | 
-		sed -E "s/SUPERCRONIC_VERSION/$SUPERSONIC_VERSION/" | \
-		sed -E "s/amd64/arm64/g" | \
-		tr -d '$')
-	SUPERSONIC_SHA1SUM=$(curl -L -s "${SUPERCRONIC_URL}" -o - | shasum | awk '{print $1}')
+    SUPERSONIC_VERSION=$(grep "ENV SUPERCRONIC_VERSION" Dockerfiles/zeek.Dockerfile | grep -oE "[0-9.]+")
+    SUPERCRONIC_URL=$(grep "ENV SUPERCRONIC_URL" Dockerfiles/zeek.Dockerfile | \
+        grep -oE 'https[^"]+' | 
+        sed -E "s/SUPERCRONIC_VERSION/$SUPERSONIC_VERSION/" | \
+        sed -E "s/amd64/arm64/g" | \
+        tr -d '$')
+    SUPERSONIC_SHA1SUM=$(curl -L -s "${SUPERCRONIC_URL}" -o - | shasum | awk '{print $1}')
     for dockerfile in Dockerfiles/*; do
         sed -i -e "s/amd64/arm64/g" "${dockerfile}"
         sed -i -e "s#/tini /usr/bin/tini#/tini-arm64 /usr/bin/tini#g" "${dockerfile}"
