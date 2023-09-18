@@ -208,7 +208,7 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
 	SUPERSONIC_SHA1SUM=$(curl -L -s "${SUPERCRONIC_URL}" -o - | shasum | awk '{print $1}')
     for dockerfile in Dockerfiles/*; do
         sed -i -e "s/amd64/arm64/g" "${dockerfile}"
-        sed -i -e "s#/tini /usr/bin/tini#/tini.arm.64 /usr/bin/tini#g" "${dockerfile}"
+        sed -i -e "s#/tini /usr/bin/tini#/tini.arm64 /usr/bin/tini#g" "${dockerfile}"
         sed -i -e "s/ENV SUPERCRONIC_SHA1SUM .*/ENV SUPERCRONIC_SHA1SUM "'"'"${SUPERSONIC_SHA1SUM}"'"'"/" "${dockerfile}"
     done
     touch "${CONFIG_DIR}/aarch64_done"
