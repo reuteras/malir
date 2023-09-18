@@ -53,7 +53,7 @@ function install-google-chrome() {
         fi
     else
         if ! dpkg --status chromium-browser > /dev/null 2>&1 ; then
-            info-message "Installing Google Chrome."
+            info-message "Installing Chromium."
             sudo apt install -yqq chromium-browser > /dev/null 2>&1
         fi
     fi
