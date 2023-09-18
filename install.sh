@@ -69,18 +69,18 @@ function malcolm-configure() {
     echo "n" | sudo python3 scripts/install.py --defaults \
         --dark-mode true \
         --suricata-rule-update true \
-		--extracted-file-server true \
-		--extracted-file-server-password infected \
+        --extracted-file-server true \
+        --extracted-file-server-password infected \
         --file-extraction all \
         --file-preservation quarantined \
         --file-scan-rule-update true
     # shellcheck disable=SC2016
     ./scripts/auth_setup --auth-noninteractive \
-		--auth-admin-username admin \
-		--auth-admin-password-htpasswd '$2y$05$N37mG4dLlQAHccESse3mL.6NGqLOqo/Vf5DpKoEmEeAL5mk8i15Ja' \
-		--auth-generate-webcerts \
-		--auth-generate-fwcerts \
-		--auth-generate-netbox-passwords
+        --auth-admin-username admin \
+        --auth-admin-password-htpasswd '$2y$05$N37mG4dLlQAHccESse3mL.6NGqLOqo/Vf5DpKoEmEeAL5mk8i15Ja' \
+        --auth-generate-webcerts \
+        --auth-generate-fwcerts \
+        --auth-generate-netbox-passwords
     info-message "Configuration done."
     touch "${CONFIG_DIR}/configure_done"
     info-message "Reboot to update settings. Then run the script again."
@@ -99,6 +99,7 @@ function malcolm-build() {
         docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
     fi
     cd ~/Malcolm || exit
+    sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
     ./scripts/build.sh
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
@@ -200,7 +201,7 @@ cd "${HOME}" || exit
 if !  test -d Malcolm ; then
     git clone https://github.com/cisagov/Malcolm.git
     cd Malcolm || exit
-	git fetch --all --tags
+    git fetch --all --tags
     git checkout tags/"$MALCOLM_VERSION" | grep Note
 fi
 
