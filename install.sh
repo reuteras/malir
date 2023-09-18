@@ -96,6 +96,13 @@ function malcolm-configure() {
 function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
+	if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
+		# Need to build this image for aarch64
+		cd ~ || exit
+		git clone https://github.com/mmguero-dev/jekyll-serve.git
+		cd jekyll-serve || exit
+		docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
+	fi
     cd ~/Malcolm || exit
     ./scripts/build.sh
     info-message "Build done."
@@ -216,11 +223,6 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
         sed -i -e "s#/tini /usr/bin/tini#/tini-arm64 /usr/bin/tini#g" "${dockerfile}"
         sed -i -e "s/ENV SUPERCRONIC_SHA1SUM .*/ENV SUPERCRONIC_SHA1SUM "'"'"${SUPERSONIC_SHA1SUM}"'"'"/" "${dockerfile}"
     done
-	# Need to build this image for aarch64
-	cd ~ || exit
-	git clone https://github.com/mmguero-dev/jekyll-serve.git
-	cd jekyll-serve || exit
-	docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
     touch "${CONFIG_DIR}/aarch64_done"
 fi
 
