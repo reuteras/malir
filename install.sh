@@ -24,17 +24,6 @@ function error-exit-message() {
         exit 1
 }
 
-# Turn off sound on start up
- function turn-off-sound() {
-    if [[ ! -e /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override ]]; then
-    info-message "Turn off sound."
-        echo -e '[com.canonical.unity-greeter]\nplay-ready-sound = false' | \
-        sudo tee -a /usr/share/glib-2.0/schemas/50_unity-greeter.gschema.override > /dev/null
-        sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
-    fi
-    touch "${CONFIG_DIR}/sound_done"
-}
-
 function update-ubuntu(){
     info-message "Running apt update."
     # shellcheck disable=SC2024
@@ -52,7 +41,7 @@ function update-ubuntu(){
 
 # Install Google Chrome
 function install-google-chrome() {
-    if [[ "$(uname -m)" == "aarch64" ]]; then
+    if [[ "$(uname -m)" != "aarch64" ]]; then
         if ! dpkg --status google-chrome-stable > /dev/null 2>&1 ; then
             info-message "Installing Google Chrome."
             wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
@@ -80,12 +69,18 @@ function malcolm-configure() {
     sudo python3 scripts/install.py --defaults \
         --dark-mode true \
         --suricata-rule-update true \
+		--extracted-file-server true \
+		--extracted-file-server-password infected \
         --file-extraction all \
         --file-preservation quarantined \
         --file-scan-rule-update true
-    ./scripts/auth_setup
-    sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'false'/EXTRACTED_FILE_HTTP_SERVER_ENABLE : 'true'/" docker-compose.yml
-    sed -i -e "s/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'true'/EXTRACTED_FILE_HTTP_SERVER_ENCRYPT : 'false'/" docker-compose.yml
+    # shellcheck disable=SC2016
+    ./scripts/auth_setup --auth-noninteractive \
+		--auth-admin-username admin \
+		--auth-admin-password-htpasswd '$2y$05$N37mG4dLlQAHccESse3mL.6NGqLOqo/Vf5DpKoEmEeAL5mk8i15Ja' \
+		--auth-generate-webcerts \
+		--auth-generate-fwcerts \
+		--auth-generate-netbox-passwords
     info-message "Configuration done."
     touch "${CONFIG_DIR}/configure_done"
     info-message "Reboot to update settings. Then run the script again."
@@ -124,7 +119,7 @@ function malcolm-maxmind() {
         read -rp "Maxmind GeoIP license key (will echo key): " MAXMIND_KEY
     done
     echo ""
-    sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY : '0'/MAXMIND_GEOIP_DB_LICENSE_KEY : \'$MAXMIND_KEY\'/" config/arkime-secret.env
+    sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY=0/MAXMIND_GEOIP_DB_LICENSE_KEY=\'$MAXMIND_KEY\'/" config/arkime-secret.env
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" config/arkime-secret.env > /dev/null 2>&1 ; then
         error-exit-message "Maxmind GeoIP License key not updated, exiting."
     fi
@@ -162,7 +157,8 @@ function nginx-configure(){
     info-message "Configure nginx."
     cd ~/Malcolm || exit
     sed -i -e "/  upstream upload/i \ \ upstream arkime-wise {\n    server arkime:8081;\n  }\n" nginx/nginx.conf
-    sed -i -e "/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n" nginx/nginx.conf
+    # shellcheck disable=SC2016
+    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
     touch "${CONFIG_DIR}/nginx_done"
 }
 
@@ -204,7 +200,8 @@ cd "${HOME}" || exit
 if !  test -d Malcolm ; then
     git clone https://github.com/cisagov/Malcolm.git
     cd Malcolm || exit
-    git checkout tags/"$MALCOLM_VERSION" -b main
+	git fetch --all --tags
+    git checkout tags/"$MALCOLM_VERSION"
 fi
 
 if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
@@ -228,7 +225,6 @@ fi
 
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
 test -e "${CONFIG_DIR}/google_done" || install-google-chrome
-test -e "${CONFIG_DIR}/sound_done" || turn-off-sound
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
@@ -239,4 +235,4 @@ test -e "${CONFIG_DIR}/build_done" || malcolm-build
 test -e "${CONFIG_DIR}/background_done" || malcolm-background
 
 info-message "Installation done."
-info-message "Start Malcolm by running ./scripts/start in the ~/Malcolm directory."
+info-message "Start Malcolm by changing to the ~/Malcolm directory and run ./scripts/start."
