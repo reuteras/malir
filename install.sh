@@ -99,8 +99,8 @@ function malcolm-build() {
 
 # Function to set MaxMind GeoIP license key for Arkime
 function malcolm-maxmind() {
-    info-message "The build process needs your Maxmind API Key"
-    info-message "Go to https://www.maxmind.com/"
+    info-message "The build process needs your Maxmind API Key (free)"
+    info-message "Get it from https://www.maxmind.com/"
     echo ""
     cd ~/Malcolm || exit
     MAXMIND_KEY=""
