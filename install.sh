@@ -75,11 +75,13 @@ function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
     if [[ "$(uname -m)" == "aarch64" ]]; then
-        # Need to build this image for aarch64
-        cd ~ || exit
-        git clone https://github.com/mmguero-dev/jekyll-serve.git
-        cd jekyll-serve || exit
-        docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
+        if ! docker images -a | grep ghcr.io/mmguero-dev/jekyll > /dev/null ; then
+            # Need to build this image for aarch64
+            cd ~ || exit
+            git clone https://github.com/mmguero-dev/jekyll-serve.git
+            cd jekyll-serve || exit
+            docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
+        fi
     fi
     cd ~/Malcolm || exit
     sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
@@ -189,7 +191,7 @@ if !  test -d Malcolm ; then
     git clone https://github.com/idaholab/Malcolm.git
     cd Malcolm || exit
     git fetch --all --tags
-	info-message "Using version $MALCOLM_VERSION of Malcolm."
+    info-message "Using version $MALCOLM_VERSION of Malcolm."
     git checkout tags/"$MALCOLM_VERSION" 2>&1 | grep Note
 fi
 
