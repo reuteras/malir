@@ -8,22 +8,26 @@ export DEBIAN_FRONTEND=noninteractive
 
 #
 # Functions
-# 
+#
 
 # Functions to print messages
 function info-message() {
     echo "**** INFO: $*"
 }
 
+
 function error-message() {
     (>&2 echo "**** ERROR: $*")
 }
+
 
 function error-exit-message() {
     (>&2 echo "**** ERROR: $*")
         exit 1
 }
 
+
+# Function to update Ubuntu
 function update-ubuntu(){
     info-message "Running apt update."
     # shellcheck disable=SC2024
@@ -39,30 +43,6 @@ function update-ubuntu(){
     touch "${CONFIG_DIR}/ubuntu_done"
 }
 
-# Install Google Chrome
-function install-google-chrome() {
-    if [[ "$(uname -m)" != "aarch64" ]]; then
-        if ! dpkg --status google-chrome-stable > /dev/null 2>&1 ; then
-            info-message "Installing Google Chrome."
-            wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-            # shellcheck disable=SC2024
-            sudo dpkg -i google-chrome-stable_current_amd64.deb > /dev/null 2>&1 || true
-            # shellcheck disable=SC2024
-            sudo apt -qq -f -y install > /dev/null 2>&1
-            rm -f google-chrome-stable_current_amd64.deb
-            info-message "Adding Google Chrome to favorites."
-            gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'google-chrome.desktop']"
-        fi
-    else
-        if ! dpkg --status chromium-browser > /dev/null 2>&1 ; then
-            info-message "Installing Chromium."
-            sudo apt install -yqq chromium-browser > /dev/null 2>&1
-            info-message "Adding Chromium to favorites."
-            gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'chromium_chromium.desktop']"
-        fi
-    fi
-    touch "${CONFIG_DIR}/google_done"
-}
 
 # Function to configure Malcolm
 function malcolm-configure() {
@@ -89,7 +69,8 @@ function malcolm-configure() {
     exit
 }
 
-# Function to build Malcolm
+
+# Function to build Malcolm containers
 function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
@@ -115,7 +96,8 @@ function malcolm-build() {
     touch "${CONFIG_DIR}/build_done"
 }
 
-# Function to set MaxMind GeoIP license key
+
+# Function to set MaxMind GeoIP license key for Arkime
 function malcolm-maxmind() {
     info-message "The build process needs your Maxmind API Key"
     info-message "Go to https://www.maxmind.com/"
@@ -133,6 +115,8 @@ function malcolm-maxmind() {
     touch "${CONFIG_DIR}/maxmind_done"
 }
 
+
+# Function to change settings for docker-compose
 function malcolm-docker-compose() {
     info-message "Increase retries in docker-compose.yml"
     sed -i -e "s/retries: 3$/retries: 40/" ~/Malcolm/docker-compose.yml
@@ -143,23 +127,21 @@ function malcolm-docker-compose() {
     touch "${CONFIG_DIR}/docker_compose_done"
 }
 
-function malcolm-background() {
-    info-message "Set background." 
-    gsettings set org.gnome.desktop.background picture-uri "file:///home/${USER}/manir/resources/bg.jpg"
-    touch "${CONFIG_DIR}/background_done"
-}
 
+# Function to add intel from Critical Path Security to Zeek
 function malcolm-zeek-intel(){
     info-message "Clone Zeek intel from Critical Path Security"
     CDIR="$(pwd)"
     cd ~/Malcolm/zeek/intel || exit
     git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git
-    cd ~/Malcolm || exit   
+    cd ~/Malcolm || exit
     sed -i -e "s_/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds_/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
     cd "${CDIR}" || exit
     touch "${CONFIG_DIR}/zeek_intel_done"
 }
 
+
+# Change nginx configuration - add wise
 function nginx-configure(){
     info-message "Configure nginx."
     cd ~/Malcolm || exit
@@ -169,6 +151,8 @@ function nginx-configure(){
     touch "${CONFIG_DIR}/nginx_done"
 }
 
+
+# Function to change Arkime configuration
 function malcolm-configure-arkime(){
     info-message "Configure Arkime"
     cd ~/Malcolm || exit
@@ -188,10 +172,6 @@ function malcolm-configure-arkime(){
 info-message "Start installation of Malcolm and extra tools."
 test -d "${CONFIG_DIR}" || mkdir -p "${CONFIG_DIR}"
 
-if ! gsettings get org.gnome.shell favorite-apps | grep "org.gnome.Terminal.desktop" > /dev/null ; then
-    info-message "Add Terminal to favorite apps."
-    gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'org.gnome.Terminal.desktop']"
-fi
 
 # Check for membership in group docker
 if ! grep "docker:" /etc/group | grep -E "(,|:)${USER}" > /dev/null; then
@@ -202,12 +182,14 @@ if ! grep "docker:" /etc/group | grep -E "(,|:)${USER}" > /dev/null; then
     exit
 fi
 
+
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
 if !  test -d Malcolm ; then
     git clone https://github.com/cisagov/Malcolm.git
     cd Malcolm || exit
     git fetch --all --tags
+	info-message "Using version $MALCOLM_VERSION of Malcolm."
     git checkout tags/"$MALCOLM_VERSION" 2>&1 | grep Note
 fi
 
@@ -217,7 +199,7 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
     sed -i -e "s/amd64/arm64/g" scripts/install.py
     SUPERSONIC_VERSION=$(grep "ENV SUPERCRONIC_VERSION" Dockerfiles/zeek.Dockerfile | grep -oE "[0-9.]+")
     SUPERCRONIC_URL=$(grep "ENV SUPERCRONIC_URL" Dockerfiles/zeek.Dockerfile | \
-        grep -oE 'https[^"]+' | 
+        grep -oE 'https[^"]+' | \
         sed -E "s/SUPERCRONIC_VERSION/$SUPERSONIC_VERSION/" | \
         sed -E "s/amd64/arm64/g" | \
         tr -d '$')
@@ -231,7 +213,6 @@ if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
 fi
 
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
-test -e "${CONFIG_DIR}/google_done" || install-google-chrome
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
@@ -239,7 +220,6 @@ test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
-test -e "${CONFIG_DIR}/background_done" || malcolm-background
 
 info-message "Installation done."
 info-message "Start Malcolm by changing to the ~/Malcolm directory and run ./scripts/start."
