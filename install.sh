@@ -63,9 +63,9 @@ function malcolm-configure() {
         --auth-generate-webcerts \
         --auth-generate-fwcerts \
         --auth-generate-netbox-passwords
-    info-message "Configuration done."
+    info-message "Configuration of Malcolm done."
     touch "${CONFIG_DIR}/configure_done"
-    info-message "Reboot to update settings. Then run the script again."
+    info-message "Reboot to update settings. Then run the script install.sh again."
     exit
 }
 
@@ -84,9 +84,9 @@ function malcolm-build() {
     cd ~/Malcolm || exit
     sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
     if [[ "$(uname -m)" == "aarch64" ]]; then
-        echo "y" | ./scripts/build.sh
+        echo "y" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh
     else
-        ./scripts/build.sh
+        MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh
     fi
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
@@ -108,7 +108,7 @@ function malcolm-maxmind() {
         read -rp "Maxmind GeoIP license key (will echo key): " MAXMIND_KEY
     done
     echo ""
-    sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY=0/MAXMIND_GEOIP_DB_LICENSE_KEY=\'$MAXMIND_KEY\'/" config/arkime-secret.env
+    sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY=0/MAXMIND_GEOIP_DB_LICENSE_KEY=$MAXMIND_KEY/" config/arkime-secret.env
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" config/arkime-secret.env > /dev/null 2>&1 ; then
         error-exit-message "Maxmind GeoIP License key not updated, exiting."
     fi
@@ -186,7 +186,7 @@ fi
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
 if !  test -d Malcolm ; then
-    git clone https://github.com/cisagov/Malcolm.git
+    git clone https://github.com/idaholab/Malcolm.git
     cd Malcolm || exit
     git fetch --all --tags
 	info-message "Using version $MALCOLM_VERSION of Malcolm."
