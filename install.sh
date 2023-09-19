@@ -57,7 +57,7 @@ function malcolm-configure() {
         --file-preservation quarantined \
         --file-scan-rule-update true
     # shellcheck disable=SC2016
-    ./scripts/auth_setup --auth-noninteractive \
+    sudo python3 scripts/control.py --auth-noninteractive \
         --auth-admin-username admin \
         --auth-admin-password-htpasswd '$2y$05$N37mG4dLlQAHccESse3mL.6NGqLOqo/Vf5DpKoEmEeAL5mk8i15Ja' \
         --auth-generate-webcerts \
