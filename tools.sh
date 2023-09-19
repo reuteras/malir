@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CONFIG_DIR="${HOME}/.config/manir"
+
 echo "wireshark-common wireshark-common/install-setuid boolean true" | \
     sudo debconf-set-selections
 export DEBIAN_FRONTEND=noninteractive
