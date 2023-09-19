@@ -46,7 +46,7 @@ function update-ubuntu(){
 
 # Function to configure Malcolm
 function malcolm-configure() {
-    info-message "Starting interactive configuration of Malcolm"
+    info-message "Starting automatic configuration of Malcolm"
     cd ~/Malcolm || exit
     echo "n" | sudo python3 scripts/install.py --defaults \
         --dark-mode true \
