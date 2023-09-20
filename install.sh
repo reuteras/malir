@@ -76,7 +76,7 @@ function malcolm-build() {
     info-message "This will take some time..."
     if [[ "$(uname -m)" == "aarch64" ]]; then
         if ! docker images -a | grep ghcr.io/mmguero-dev/jekyll > /dev/null ; then
-            # Need to build this image for aarch64
+            info-message "Build jekyll for aarch64 first"
             cd ~ || exit
             git clone https://github.com/mmguero-dev/jekyll-serve.git
             cd jekyll-serve || exit
