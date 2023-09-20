@@ -56,10 +56,12 @@ function malcolm-configure() {
         --file-extraction all \
         --file-preservation quarantined \
         --file-scan-rule-update true
+    touch nginx/htpasswd
     # shellcheck disable=SC2016
-    sudo python3 scripts/control.py --auth-noninteractive \
+    python3 scripts/control.py --auth-noninteractive \
         --auth-admin-username admin \
         --auth-admin-password-htpasswd '$2y$05$N37mG4dLlQAHccESse3mL.6NGqLOqo/Vf5DpKoEmEeAL5mk8i15Ja' \
+        --auth-admin-password-openssl '$1$RD8JxZlf$2aHwWP71GY3kKjMNfjIKu0' \
         --auth-generate-webcerts \
         --auth-generate-fwcerts \
         --auth-generate-netbox-passwords
