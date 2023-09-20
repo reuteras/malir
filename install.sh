@@ -109,6 +109,7 @@ function malcolm-maxmind() {
     while [[ -z "${MAXMIND_KEY}" ]]; do
         read -rp "Maxmind GeoIP license key (will echo key): " MAXMIND_KEY
     done
+    export MAXMIND_KEY
     echo ""
     sed -i -e "s/MAXMIND_GEOIP_DB_LICENSE_KEY=0/MAXMIND_GEOIP_DB_LICENSE_KEY=$MAXMIND_KEY/" config/arkime-secret.env
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY : '0'" config/arkime-secret.env > /dev/null 2>&1 ; then
