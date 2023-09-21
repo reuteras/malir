@@ -173,10 +173,15 @@ function nginx-configure(){
 function malcolm-configure-arkime(){
     info-message "Configure Arkime"
     cd ~/Malcolm || exit
+    sed -i -e "s/parseCookieValue=false/parseCookieValue=true/" arkime/etc/config.ini
+    sed -i -e "s/parseDNSRecordAll=false/parseDNSRecordAll=true/" arkime/etc/config.ini
+    sed -i -e "s/parseHTTPHeaderRequestAll=false/parseHTTPHeaderRequestAll=true/" arkime/etc/config.ini
+    sed -i -e "s/parseHTTPHeaderResponseAll=false/parseHTTPHeaderResponseAll=true/" arkime/etc/config.ini
     sed -i -e "s/parseQSValue=false/parseQSValue=true/" arkime/etc/config.ini
+    sed -i -e "s/parseSMTPHeaderAll=false/parseSMTPHeaderAll=true/" arkime/etc/config.ini
     sed -i -e "s/supportSha256=false/supportSha256=true/" arkime/etc/config.ini
-    sed -i -e "s/maxReqBody=64/maxReqBody=1024/" arkime/etc/config.ini
-    sed -i -e "s/spiDataMaxIndices=7/spiDataMaxIndices=10000/" arkime/etc/config.ini
+    sed -i -e "s/maxReqBody=.*/maxReqBody=0/" arkime/etc/config.ini
+    sed -i -e "s/spiDataMaxIndices=.*/spiDataMaxIndices=10000/" arkime/etc/config.ini
     sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
     sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
     cp ~/malir/resources/config-local.ini arkime/etc
