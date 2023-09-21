@@ -54,12 +54,16 @@ function malcolm-configure() {
     cd ~/Malcolm || exit
     echo "n" | sudo python3 scripts/install.py --defaults \
         --dark-mode true \
-        --suricata-rule-update true \
         --extracted-file-server true \
         --extracted-file-server-password infected \
         --file-extraction all \
         --file-preservation quarantined \
-        --file-scan-rule-update true
+        --file-scan-rule-update true \
+        --netbox true \
+        --netbox-enrich true \
+        --netbox-autopopulate true \
+        --netbox-site-name malir \
+        --suricata-rule-update true 
     touch nginx/htpasswd
     # shellcheck disable=SC2016
     python3 scripts/control.py --auth-noninteractive \
