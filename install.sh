@@ -39,7 +39,7 @@ function update-ubuntu(){
         sleep 10
     done
     info-message "Running apt install python3-dotenv."
-    sudo DEBIAN_FRONTEND=noninteractive apt -y install apache2-utils openssl python3-dotenv > /dev/null 2>&1
+    sudo DEBIAN_FRONTEND=noninteractive apt -y install apache2-utils openssl python3-dotenv python3-pretty-yaml > /dev/null 2>&1
     if which snap > /dev/null ; then
         info-message "Update snap."
         sudo snap refresh
