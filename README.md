@@ -78,6 +78,7 @@ The easiest solution is to just to rerun **install.sh** and chose _N_ when asked
 - [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
 - [x] Read the docs about [contributing][con].
 - [x] Update Arkime conf
+- [ ] Look at _smtpIpHeaders_ in Arkime settings
 
 
 
