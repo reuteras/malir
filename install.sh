@@ -59,10 +59,14 @@ function malcolm-configure() {
         --file-extraction all \
         --file-preservation quarantined \
         --file-scan-rule-update true \
+        --filebeat-tcp-expose true \
+        --logstash-expose true \
         --netbox true \
         --netbox-enrich true \
         --netbox-autopopulate true \
         --netbox-site-name malir \
+        --opensearch-expose true \
+        --sftp-expose true \
         --suricata-rule-update true 
     touch nginx/htpasswd
     # shellcheck disable=SC2016
