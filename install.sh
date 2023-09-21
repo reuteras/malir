@@ -40,6 +40,8 @@ function update-ubuntu(){
     done
     info-message "Running apt install python3-dotenv."
     sudo DEBIAN_FRONTEND=noninteractive apt -y install apache2-utils openssl python3-dotenv > /dev/null 2>&1
+    info-message "Update snap."
+    sudo snap refresh
     touch "${CONFIG_DIR}/ubuntu_done"
 }
 
