@@ -38,7 +38,7 @@ function update-ubuntu(){
         info-message "APT busy. Will retry in 10 seconds."
         sleep 10
     done
-    info-message "Running apt install python3-dotenv."
+    info-message "Running apt install to install needed packages."
     sudo DEBIAN_FRONTEND=noninteractive apt -y install apache2-utils openssl python3-dotenv python3-pretty-yaml > /dev/null 2>&1
     if which snap > /dev/null ; then
         info-message "Update snap."
@@ -99,11 +99,7 @@ function malcolm-build() {
             malcolm-maxmind
         fi
     fi
-    if [[ "$(uname -m)" == "aarch64" ]]; then
-        echo "y" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh
-    else
-        MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh
-    fi
+    MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
