@@ -1,13 +1,14 @@
 # malir
 
-My scripts to install [Malcolm][mal] for incident response (IR). The goal is not to have a lean version of Malcolm after installation, rather the goal is to have all bells and whistles in the included as well as adding some more and enable the maximal amount of indexing.
+A collection of scripts to simplify the install of [Malcolm][mal] for incident response (IR). The goal of this project is to have an installation of Malcolm with most tools installed, not a small and minimal installation.
 
 ## Installation
 
-This script is only tested on Ubuntu 22.04 LTS and I recommend running it in a VM. The script will change default background during installation. Image is from [SANS][san]. There are also other changes that you might not want on your regular computer.
+Scripts are only tested on Ubuntu 22.04 LTS and Debian 12.1. The scripts should work on amd64 as well as on arm64 (Apple M1 and later).Its recommended running the script in a virtual machine.
 
-Start by cloning the repo and entering it. If you don't have git installed start with **sudo apt install -y git**.
+Start by cloning the repository and entering it. If you don't have git installed start with **sudo apt install -y git**. It is recommended that you check out the repository in your home directory.
 
+    cd
     git clone https://github.com/reuteras/malir.git
     cd malir
 
@@ -24,9 +25,10 @@ Other scripts:
 - clean.sh - Clean apt and run **docker system prune**
 - download-test-pcaps.sh - Downloads some sample pcaps from [Malware-Traffic-Analysis.net][maw].
 - update.sh - Updates Zeek feeds. Must restart Malcolm afterwards.
-- zero.sh - Write zeros to free space. Don't do this if you have a large disk in the VM.
 
 ## Usage
+
+The script will set the username to _admin_ and the password will be _password_.
 
 ### Start
 
@@ -54,19 +56,7 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
 
 ### Docker build failures
 
-The easiest solution is to just `cd ~/Malcolm` and then run `./scripts/start` which will build missing images.
-
-Otherwise you can use this **very** ugly bash line to list missing images (the last **grep -v** will miss lines - only tested for my latest problem). You have to build them in the order they appear in *~/Malcolm/docker-compose.yml*.
-
-```bash
-for image in $(grep image: ~/Malcolm/docker-compose.yml | cut -f2 -d: | tr -d ' '| sort | uniq  | grep -vE "$(docker images -a | cut -f1 -d\  | grep '/' | sort | uniq | tr '\n' '|')NOMATCH"); do grep -m1 -B5 $image ~/Malcolm/docker-compose.yml ; done | grep -v ": [0-9A-Za-z.]" | grep -v "build:"  | tr -d " :"
-```
-
-When building is done do `touch ~/.config/manir/build_done` and run install.sh again.
-
-### Netbox container fails
-
-If netbox fails and your not using it you can remove the line with **jq** and the next line with **mv** and then try again.
+The easiest solution is to just to rerun **install.sh** and chose _N_ when asked about building.
 
 ## TODO
 
