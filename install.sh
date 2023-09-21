@@ -89,6 +89,14 @@ function malcolm-build() {
     fi
     cd ~/Malcolm || exit
     sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
+    if [[ -z ${MAXMIND_KEY} ]]; then
+        # shellcheck disable=SC1091
+        source "${HOME}/Malcolm/config/arkime-secret.env"
+        MAXMIND_KEY="${MAXMIND_GEOIP_DB_LICENSE_KEY}"
+        if [[ -z ${MAXMIND_KEY} ]]; then
+            malcolm-maxmind
+        fi
+    fi
     if [[ "$(uname -m)" == "aarch64" ]]; then
         echo "y" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh
     else
