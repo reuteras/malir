@@ -200,6 +200,7 @@ function add-nfa(){
     info-message "Add nfa"
     cd ~/Malcolm || exit
     [[ -d nfa ]] || git clone git@github.com:reuteras/nfa.git
+    cp ~/malir/resources/nfa-config.ini nfa/config.ini
     if ! grep "nfa:" docker-compose* > /dev/null 2>&1 ; then
         sed -i '/services:/r resources/nfa.conf' docker-compose.yml
         sed -i '/services:/r resources/nfa.conf' docker-compose-standalone.yml
