@@ -167,8 +167,11 @@ function nginx-configure(){
     info-message "Configure nginx."
     cd ~/Malcolm || exit
     sed -i -e "/  upstream upload/i \ \ upstream arkime-wise {\n    server arkime:8081;\n  }\n" nginx/nginx.conf
+    sed -i -e "/  upstream upload/i \ \ upstream nfa {\n    server nfa:5001;\n  }\n" nginx/nginx.conf
     # shellcheck disable=SC2016
     sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
+    # shellcheck disable=SC2016
+    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa:5001\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
     touch "${CONFIG_DIR}/nginx_done"
 }
 
@@ -190,6 +193,18 @@ function malcolm-configure-arkime(){
     sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
     cp ~/malir/resources/config-local.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
+}
+
+
+function add-nfa(){
+    info-message "Add nfa"
+    cd ~/Malcolm || exit
+    [[ -d nfa ]] || git clone git@github.com:reuteras/nfa.git
+    if ! grep "nfa:" docker-compose* > /dev/null 2>&1 ; then
+        sed -i '/services:/r resources/nfa.conf' docker-compose.yml
+        sed -i '/services:/r resources/nfa.conf' docker-compose-standalone.yml
+    fi
+    touch "${CONFIG_DIR}/nfa_done"
 }
 
 # End of functions
@@ -245,6 +260,7 @@ test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
 test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
+test -e "${CONFIG_DIR}/nfa_done" || add-nfa
 test -e "${CONFIG_DIR}/build_done" || malcolm-build
 
 info-message "Installation done."
