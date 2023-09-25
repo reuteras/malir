@@ -62,26 +62,18 @@ The easiest solution is to just to rerun **install.sh** and chose _N_ when asked
 
 - [ ] Add support to tag TOR exit nodes.
 - [ ] Try and see if [nfa][nfa] is useful.
-- [ ] Add more right-click functionality to Arkime
+- [x] Add more right-click functionality to Arkime
 - [ ] More plugins to Zeek?
 - [ ] Look at the Malcolm [api][api] and the examples searching for *user-agent* and more.
 - [ ] Read [Ingesting Third-Party Logs][itl] and [Forwarding Third-Party Logs to Malcolm][ftl]
-- [x] Is it useful to have an [update][upd] script for this usecase? - Don't write an update function. Create instance for every incident. - Adding script to update rules added (Zeek).
-- [ ] How to verify that Logstash is up?
 - [ ] Read more about freq and how it is used in Malcolm.
 - [ ] Add support for Rita.
 - [ ] *cidr-map.txt* - should always be set
 - [ ] Look at *malcolm_severity.yaml* and if I should tune the values for my usecases.
-- [x] Do **git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git** in the directory zeek/intel. Read more at [Critical Path Security][cps] and in the Malcolm documentation for [Zeek Intelligence Framework][zif]
 - [ ] STIX and [TAXII][sta] in Malcolm
 - [ ] MISP [feeds][mis] in Malcolm
 - [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
-- [x] Read the docs about [contributing][con].
-- [x] Update Arkime conf
 - [ ] Look at _smtpIpHeaders_ in Arkime settings
-
-
-
 
 
   [ale]: https://github.com/cisagov/Malcolm#alerting
