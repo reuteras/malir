@@ -1,7 +1,4 @@
   nfa:
-    build:
-      context: nfa
-      dockerfile: nfa/Dockerfile
     image: reuteras/nfa:latest
     restart: "yes"
     hostname: nfa
