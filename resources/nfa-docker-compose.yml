@@ -4,8 +4,8 @@
       dockerfile: nfa/Dockerfile
     image: reuteras/nfa:latest
     hostname: nfa
-    ports:
-      - "127.0.0.1:5001:5001"
+    volumes:
+      - ./nfa/config.ini:/nfa/config.ini
     networks:
       - default
     healthcheck:
