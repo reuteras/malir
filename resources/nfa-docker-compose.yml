@@ -3,7 +3,6 @@
       context: .
       dockerfile: nfa/Dockerfile
     image: reuteras/nfa:latest
-    restart: "yes"
     hostname: nfa
     ports:
       - "127.0.0.1:5001:5001"
