@@ -37,13 +37,15 @@ function install-google-chrome() {
             rm -f google-chrome-stable_current_amd64.deb
             info-message "Adding Google Chrome to favorites."
             gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'google-chrome.desktop']"
+            xdg-settings set default-web-browser google-chrome.desktop
         fi
     else
         if ! dpkg --status chromium-browser > /dev/null 2>&1 ; then
             info-message "Installing Chromium."
             sudo apt install -yqq chromium-browser > /dev/null 2>&1
-            info-message "Adding Chromium to favorites."
+            info-message "Adding Chromium to favorites and set default."
             gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'chromium_chromium.desktop']"
+            xdg-settings set default-web-browser chromium_chromium.desktop
         fi
     fi
     touch "${CONFIG_DIR}/google_done"
