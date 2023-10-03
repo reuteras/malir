@@ -61,10 +61,7 @@ function malcolm-configure() {
         --file-scan-rule-update true \
         --filebeat-tcp-expose true \
         --logstash-expose true \
-        --netbox true \
-        --netbox-enrich true \
-        --netbox-autopopulate true \
-        --netbox-site-name malir \
+        --netbox false \
         --opensearch-expose true \
         --sftp-expose true \
         --suricata-rule-update true 
@@ -75,8 +72,7 @@ function malcolm-configure() {
         --auth-admin-password-htpasswd '$2y$05$N37mG4dLlQAHccESse3mL.6NGqLOqo/Vf5DpKoEmEeAL5mk8i15Ja' \
         --auth-admin-password-openssl '$1$RD8JxZlf$2aHwWP71GY3kKjMNfjIKu0' \
         --auth-generate-webcerts \
-        --auth-generate-fwcerts \
-        --auth-generate-netbox-passwords
+        --auth-generate-fwcerts
     info-message "Configuration of Malcolm done."
     touch "${CONFIG_DIR}/configure_done"
     info-message "Reboot to update settings. Then run the script install.sh again."
