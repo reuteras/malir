@@ -136,7 +136,7 @@ function malcolm-maxmind() {
 # Function to change settings for docker-compose
 function malcolm-docker-compose() {
     info-message "Increase retries in docker-compose.yml"
-    sed -i -e "s/retries: 3$/retries: 40/" ~/Malcolm/docker-compose.yml
+    sed -i -e "s/retries: 3$/retries: 40/" ~/Malcolm/docker-compose-dev.yml
     if ! dpkg -l | grep -v docker-compose-plugin | grep docker-compose > /dev/null ; then
         sudo apt install -yqq docker-compose > /dev/null 2>&1
     fi
@@ -199,7 +199,7 @@ function add-nfa(){
     cp ~/malir/resources/nfa-config.ini nfa/config.ini
     if ! grep "nfa:" docker-compose* > /dev/null 2>&1 ; then
         sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose.yml" docker-compose.yml
-        sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose-standalone.yml" docker-compose-standalone.yml
+        sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose-standalone.yml" docker-compose-dev.yml
     fi
     touch "${CONFIG_DIR}/nfa_done"
 }
