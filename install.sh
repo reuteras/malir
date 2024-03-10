@@ -2,7 +2,7 @@
 
 CONFIG_DIR="${HOME}/.config/manir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
-MALCOLM_VERSION="v24.02.0"
+MALCOLM_VERSION="v24.03.0"
 export PATH
 export DEBIAN_FRONTEND=noninteractive
 
@@ -94,7 +94,7 @@ function malcolm-build() {
         fi
     fi
     cd ~/Malcolm || exit
-    sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
+    #sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
     if [[ -z ${MAXMIND_KEY} ]]; then
         # shellcheck disable=SC1091
         source "${HOME}/Malcolm/config/arkime-secret.env"
@@ -253,7 +253,7 @@ fi
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
-test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
+#test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
 test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
