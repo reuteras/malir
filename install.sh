@@ -63,6 +63,13 @@ function malcolm-configure() {
         --logstash-expose true \
         --netbox false \
         --opensearch-expose true \
+        --opensearch opensearch-remote \
+        --opensearch-url  http://opensearch:9200/ \
+        --auto-arkime true \
+        --auto-freq true \
+        --auto-oui true \
+        --auto-suricata true \
+        --auto-zeek true \
         --sftp-expose true \
         --suricata-rule-update true 
     touch nginx/htpasswd
