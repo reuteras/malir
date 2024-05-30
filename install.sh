@@ -28,7 +28,7 @@ function error-exit-message() {
 
 
 # Function to update Ubuntu
-function update-ubuntu(){
+function update-os(){
     info-message "Running apt update."
     # shellcheck disable=SC2024
     sudo apt update -qq > /dev/null 2>&1
@@ -44,9 +44,28 @@ function update-ubuntu(){
         info-message "Update snap."
         sudo snap refresh
     fi
-    touch "${CONFIG_DIR}/ubuntu_done"
+    touch "${CONFIG_DIR}/os_done"
 }
 
+
+# Install Docker
+function install-docker(){
+    if dpkg --list | grep docker ; then
+        touch "${CONFIG_DIR}/os_done"
+    fi
+    sudo apt-get install ca-certificates curl
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    # shellcheck disable=SC1091
+    echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+              sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    touch "${CONFIG_DIR}/os_done"
+}
 
 # Function to configure Malcolm
 function malcolm-configure() {
@@ -216,7 +235,8 @@ if !  test -d Malcolm ; then
     git checkout tags/"$MALCOLM_VERSION" 2>&1 | grep Note
 fi
 
-test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
+test -e "${CONFIG_DIR}/os_done" || update-os
+test -e "${CONFIG_DIR}/docker_done" || install-docker
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
 test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
