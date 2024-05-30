@@ -50,7 +50,7 @@ function update-os(){
 
 # Install Docker
 function install-docker(){
-    if dpkg --list | grep docker ; then
+    if dpkg --list | grep docker > /dev/null ; then
         touch "${CONFIG_DIR}/os_done"
     fi
     sudo apt-get install ca-certificates curl
@@ -64,7 +64,7 @@ function install-docker(){
               sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-    touch "${CONFIG_DIR}/os_done"
+    touch "${CONFIG_DIR}/docker_done"
 }
 
 # Function to configure Malcolm
