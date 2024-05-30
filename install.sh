@@ -2,7 +2,7 @@
 
 CONFIG_DIR="${HOME}/.config/manir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
-MALCOLM_VERSION="v24.03.1"
+MALCOLM_VERSION="v24.05.0"
 export PATH
 export DEBIAN_FRONTEND=noninteractive
 
@@ -91,17 +91,7 @@ function malcolm-configure() {
 function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
-    if [[ "$(uname -m)" == "aarch64" ]]; then
-        if ! docker images -a | grep ghcr.io/mmguero-dev/jekyll > /dev/null ; then
-            info-message "Build jekyll for aarch64 first"
-            cd ~ || exit
-            git clone https://github.com/mmguero-dev/jekyll-serve.git
-            cd jekyll-serve || exit
-            docker build --tag ghcr.io/mmguero-dev/jekyll:latest .
-        fi
-    fi
     cd ~/Malcolm || exit
-    #sed -i -e "s/DOCKER_COMPOSE_COMMAND --progress=plain build/DOCKER_COMPOSE_COMMAND build --progress=plain /" scripts/build.sh
     if [[ -z ${MAXMIND_KEY} ]]; then
         # shellcheck disable=SC1091
         source "${HOME}/Malcolm/config/arkime-secret.env"
@@ -137,18 +127,6 @@ function malcolm-maxmind() {
         error-exit-message "Maxmind GeoIP License key not updated, exiting."
     fi
     touch "${CONFIG_DIR}/maxmind_done"
-}
-
-
-# Function to change settings for docker-compose
-function malcolm-docker-compose() {
-    info-message "Increase retries in docker-compose.yml"
-    sed -i -e "s/retries: 3$/retries: 40/" ~/Malcolm/docker-compose-dev.yml
-    if ! dpkg -l | grep -v docker-compose-plugin | grep docker-compose > /dev/null ; then
-        sudo apt install -yqq docker-compose > /dev/null 2>&1
-    fi
-    info-message "Done increasing retries in docker-compose.yml"
-    touch "${CONFIG_DIR}/docker_compose_done"
 }
 
 
@@ -238,29 +216,9 @@ if !  test -d Malcolm ; then
     git checkout tags/"$MALCOLM_VERSION" 2>&1 | grep Note
 fi
 
-if [[ "$(uname -m)" == "aarch64" && ! -f "${CONFIG_DIR}/aarch64_done" ]]; then
-    info-message "Fixes for aarch64"
-    cd ~/Malcolm || exit
-    sed -i -e "s/amd64/arm64/g" scripts/install.py
-    SUPERSONIC_VERSION=$(grep "ENV SUPERCRONIC_VERSION" Dockerfiles/zeek.Dockerfile | grep -oE "[0-9.]+")
-    SUPERCRONIC_URL=$(grep "ENV SUPERCRONIC_URL" Dockerfiles/zeek.Dockerfile | \
-        grep -oE 'https[^"]+' | \
-        sed -E "s/SUPERCRONIC_VERSION/$SUPERSONIC_VERSION/" | \
-        sed -E "s/amd64/arm64/g" | \
-        tr -d '$')
-    SUPERSONIC_SHA1SUM=$(curl -L -s "${SUPERCRONIC_URL}" -o - | shasum | awk '{print $1}')
-    for dockerfile in Dockerfiles/*; do
-        sed -i -e "s/amd64/arm64/g" "${dockerfile}"
-        sed -i -e "s#/tini /usr/bin/tini#/tini-arm64 /usr/bin/tini#g" "${dockerfile}"
-        sed -i -e "s/ENV SUPERCRONIC_SHA1SUM .*/ENV SUPERCRONIC_SHA1SUM "'"'"${SUPERSONIC_SHA1SUM}"'"'"/" "${dockerfile}"
-    done
-    touch "${CONFIG_DIR}/aarch64_done"
-fi
-
 test -e "${CONFIG_DIR}/ubuntu_done" || update-ubuntu
 test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
 test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
-#test -e "${CONFIG_DIR}/docker_compose_done" || malcolm-docker-compose
 test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
