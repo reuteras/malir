@@ -42,7 +42,7 @@ function install-google-chrome() {
     else
         if ! dpkg --status chromium > /dev/null 2>&1 ; then
             info-message "Installing Chromium."
-            if test -e /etc/os-release && grep "Debian GNU" /etc/os-release; then
+            if test -e /etc/os-release && grep "Debian GNU" /etc/os-release > /dev/null; then
                 sudo apt install -yqq chromium > /dev/null 2>&1
                 info-message "Adding Chromium to favorites and set default."
                 gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'chromium.desktop']"
