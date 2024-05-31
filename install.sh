@@ -159,7 +159,7 @@ function malcolm-zeek-intel(){
     info-message "Clone Zeek intel from Critical Path Security"
     CDIR="$(pwd)"
     cd ~/Malcolm/zeek/intel || exit
-    git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git
+    git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git > /dev/null
     cd ~/Malcolm || exit
     sed -i -e "s_/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds_/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
     cd "${CDIR}" || exit
@@ -203,7 +203,7 @@ function malcolm-configure-arkime(){
 function add-nfa(){
     info-message "Add nfa"
     cd ~/Malcolm || exit
-    [[ -d nfa ]] || git clone https://github.com/reuteras/nfa.git
+    [[ -d nfa ]] || git clone https://github.com/reuteras/nfa.git > /dev/null
     cp ~/malir/resources/nfa-config.ini nfa/config.ini
     if ! grep "nfa:" docker-compose* > /dev/null 2>&1 ; then
         sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose.yml" docker-compose.yml
@@ -232,7 +232,7 @@ fi
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
 if !  test -d Malcolm ; then
-    git clone https://github.com/idaholab/Malcolm.git
+    git clone https://github.com/idaholab/Malcolm.git > /dev/null
     cd Malcolm || exit
     git fetch --all --tags
     info-message "Using version $MALCOLM_VERSION of Malcolm."
