@@ -79,7 +79,9 @@ function malcolm-configure() {
         --file-preservation quarantined \
         --file-scan-rule-update true \
         --filebeat-tcp-expose true \
+        --live-capture-arkime false \
         --logstash-expose true \
+        --malcolm-profile true \
         --netbox false \
         --opensearch-expose true \
         --opensearch opensearch-remote \
