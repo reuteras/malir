@@ -42,7 +42,7 @@ function install-google-chrome() {
     else
         if ! dpkg --status chromium-browser > /dev/null 2>&1 ; then
             info-message "Installing Chromium."
-            sudo apt install -yqq chromium-browser > /dev/null 2>&1
+            sudo apt install -yqq chromium-browser > /dev/null 2>&1 || sudo apt install -yqq chromium > /dev/null 2>&1
             info-message "Adding Chromium to favorites and set default."
             gsettings set org.gnome.shell favorite-apps "$(gsettings get org.gnome.shell favorite-apps | sed s/.$//), 'chromium_chromium.desktop']"
             xdg-settings set default-web-browser chromium_chromium.desktop
