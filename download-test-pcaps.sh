@@ -20,8 +20,10 @@ for url in ${URLS} ; do
 done
 
 for file in *.pcap.zip ; do
-    echo "Unzip ${file}"
-    unzip -P infected "${file}" > /dev/null 2>&1
+    number=$(echo "${file}" | cut -f1,2,3 -d- | tr -d '-')
+    password="infected_${number}"
+    echo "Unzip ${file} with password ${password}"
+    unzip -P "${password}" "${file}" > /dev/null 2>&1
     rm "${file}"
  done
     
