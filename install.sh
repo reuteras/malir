@@ -39,7 +39,7 @@ function update-os(){
         sleep 10
     done
     info-message "Running apt install to install needed packages."
-    sudo DEBIAN_FRONTEND=noninteractive apt -y install apache2-utils openssl python3-dotenv python3-pretty-yaml > /dev/null 2>&1
+    sudo DEBIAN_FRONTEND=noninteractive apt -y install apache2-utils ca-certificates curl openssl python3-dotenv python3-pretty-yaml > /dev/null 2>&1
     if which snap > /dev/null ; then
         info-message "Update snap."
         sudo snap refresh
@@ -53,8 +53,6 @@ function install-docker(){
     if dpkg --list | grep docker > /dev/null ; then
         touch "${CONFIG_DIR}/os_done"
     fi
-    info-message "Make sure curl and ca-certificates are installed."
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install ca-certificates curl > /dev/null 2>&1
     sudo install -m 0755 -d /etc/apt/keyrings > /dev/null 2>&1
     sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc > /dev/null 2>&1
     sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -173,12 +171,11 @@ function malcolm-zeek-intel(){
 function nginx-configure(){
     info-message "Configure nginx."
     cd ~/Malcolm || exit
-    sed -i -e "/  upstream upload/i \ \ upstream arkime-wise {\n    server arkime:8081;\n  }\n" nginx/nginx.conf
     sed -i -e "/  upstream upload/i \ \ upstream nfa {\n    server nfa:5001;\n  }\n" nginx/nginx.conf
     # shellcheck disable=SC2016
-    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
+    #sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
     # shellcheck disable=SC2016
-    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
+    #sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
     touch "${CONFIG_DIR}/nginx_done"
 }
 
