@@ -102,9 +102,6 @@ function malcolm-configure() {
         --auth-generate-webcerts \
         --auth-generate-fwcerts
     info-message "Configuration of Malcolm done."
-    info-message "Configure dark mode."
-    gsettings set org.gnome.desktop.interface color-scheme prefer-dark
-    gsettings set org.gnome.desktop.interface gtk-theme 'Adwaita-dark'
     touch "${CONFIG_DIR}/configure_done"
     info-message "Reboot to update settings. Then run the script install.sh again."
     exit
