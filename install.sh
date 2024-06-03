@@ -85,7 +85,7 @@ function malcolm-configure() {
         --netbox false \
         --opensearch-expose true \
         --opensearch opensearch-remote \
-        --opensearch-url  http://opensearch:9200/ \
+        --opensearch-url  https://opensearch:9200/ \
         --auto-arkime true \
         --auto-freq true \
         --auto-oui true \
