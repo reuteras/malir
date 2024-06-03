@@ -83,9 +83,6 @@ function malcolm-configure() {
         --logstash-expose true \
         --malcolm-profile true \
         --netbox false \
-        --opensearch-expose true \
-        --opensearch opensearch-remote \
-        --opensearch-url  https://opensearch:9200/ \
         --auto-arkime true \
         --auto-freq true \
         --auto-oui true \
