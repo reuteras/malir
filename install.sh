@@ -167,9 +167,9 @@ function nginx-configure(){
     cd ~/Malcolm || exit
     sed -i -e "/  upstream upload/i \ \ upstream nfa {\n    server nfa:5001;\n  }\n" nginx/nginx.conf
     # shellcheck disable=SC2016
-    #sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
+    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
     # shellcheck disable=SC2016
-    #sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
+    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
     touch "${CONFIG_DIR}/nginx_done"
 }
 
@@ -178,7 +178,7 @@ function nginx-configure(){
 function malcolm-configure-arkime(){
     info-message "Configure Arkime"
     cd ~/Malcolm || exit
-    sed -i -e "s/parseCookieValue=false/parseCookieValue=true/" arkime/etc/config.ini
+    sed -i -e "s/magicMode=basic/magicMode=both/" arkime/etc/config.ini
     sed -i -e "s/parseDNSRecordAll=false/parseDNSRecordAll=true/" arkime/etc/config.ini
     sed -i -e "s/parseHTTPHeaderRequestAll=false/parseHTTPHeaderRequestAll=true/" arkime/etc/config.ini
     sed -i -e "s/parseHTTPHeaderResponseAll=false/parseHTTPHeaderResponseAll=true/" arkime/etc/config.ini
@@ -187,8 +187,9 @@ function malcolm-configure-arkime(){
     sed -i -e "s/supportSha256=false/supportSha256=true/" arkime/etc/config.ini
     sed -i -e "s/maxReqBody=.*/maxReqBody=0/" arkime/etc/config.ini
     sed -i -e "s/spiDataMaxIndices=.*/spiDataMaxIndices=10000/" arkime/etc/config.ini
+    sed -i -e "s/valueAutoComplete=false/valueAutoComplete=true/" arkime/etc/config.ini
     sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
-    #sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
+    sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
     cp ~/malir/resources/config-local.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
 }
