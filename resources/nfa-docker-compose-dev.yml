@@ -1,4 +1,7 @@
   nfa:
+    build:
+      context: .
+      dockerfile: nfa/Dockerfile
     image: reuteras/nfa:latest
     hostname: nfa
     volumes:

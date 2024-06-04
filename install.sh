@@ -201,7 +201,7 @@ function add-nfa(){
     cp ~/malir/resources/nfa-config.ini nfa/config.ini
     if ! grep "nfa:" docker-compose* > /dev/null 2>&1 ; then
         sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose.yml" docker-compose.yml
-        sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose-standalone.yml" docker-compose-dev.yml
+        sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose-dev.yml" docker-compose-dev.yml
     fi
     touch "${CONFIG_DIR}/nfa_done"
 }
