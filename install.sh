@@ -188,7 +188,7 @@ function malcolm-configure-arkime(){
     sed -i -e "s/maxReqBody=.*/maxReqBody=0/" arkime/etc/config.ini
     sed -i -e "s/spiDataMaxIndices=.*/spiDataMaxIndices=10000/" arkime/etc/config.ini
     sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
-    sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
+    #sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
     cp ~/malir/resources/config-local.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
 }
