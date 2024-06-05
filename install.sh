@@ -155,7 +155,7 @@ function malcolm-zeek-intel(){
     info-message "Clone Zeek intel from Critical Path Security"
     CDIR="$(pwd)"
     cd ~/Malcolm/zeek/intel || exit
-    git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git > /dev/null
+    git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git > /dev/null 2>&1
     cd ~/Malcolm || exit
     sed -i -e "s_/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds_/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
     cd "${CDIR}" || exit
