@@ -84,6 +84,7 @@ function malcolm-configure() {
         --malcolm-profile true \
         --netbox false \
         --opensearch-expose true \
+        --opensearch-url https://localhost:9200 \
         --auto-arkime true \
         --auto-freq true \
         --auto-oui true \
