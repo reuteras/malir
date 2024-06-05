@@ -83,6 +83,7 @@ function malcolm-configure() {
         --logstash-expose true \
         --malcolm-profile true \
         --netbox false \
+        --opensearch-expose true \
         --auto-arkime true \
         --auto-freq true \
         --auto-oui true \
@@ -165,6 +166,7 @@ function malcolm-zeek-intel(){
 function nginx-configure(){
     info-message "Configure nginx."
     cd ~/Malcolm || exit
+    sed -i -e "/  upstream upload/i \ \ upstream arkime-wise {\n    server arkime:8081;\n  }\n" nginx/nginx.conf
     sed -i -e "/  upstream upload/i \ \ upstream nfa {\n    server nfa:5001;\n  }\n" nginx/nginx.conf
     # shellcheck disable=SC2016
     sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
