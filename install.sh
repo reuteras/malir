@@ -71,7 +71,7 @@ function install-docker(){
 function malcolm-configure() {
     info-message "Starting automatic configuration of Malcolm"
     cd ~/Malcolm || exit
-    echo "n" | sudo python3 scripts/install.py --defaults \
+    echo "n" | python3 scripts/install.py --defaults \
         --dark-mode true \
         --extracted-file-server true \
         --extracted-file-server-password infected \
