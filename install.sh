@@ -192,6 +192,7 @@ function malcolm-configure-arkime(){
     sed -i -e "s/valueAutoComplete=false/valueAutoComplete=true/" arkime/etc/config.ini
     sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
     sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
+    sed -i -e 's#curl -fsS --output /dev/null "http://127.0.0.1:8081/fields?ver=1"#true#' arkime/scripts/initarkime.sh
     cp ~/malir/resources/config-local.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
 }
