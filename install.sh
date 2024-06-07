@@ -162,16 +162,13 @@ function malcolm-zeek-intel(){
 }
 
 
-# Change nginx configuration - add wise
+# Change nginx configuration - add nfa
 function nginx-configure(){
     info-message "Configure nginx."
     cd ~/Malcolm || exit
-    sed -i -e "/  upstream upload/i \ \ upstream arkime-wise {\n    server arkime:8081;\n  }\n" nginx/nginx.conf
     sed -i -e "/  upstream upload/i \ \ upstream nfa {\n    server nfa:5001;\n  }\n" nginx/nginx.conf
     # shellcheck disable=SC2016
-    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # Arkime wise\n    location ~* \/wise\/(.*) {\n      proxy_pass http:\/\/arkime-wise\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
-    # shellcheck disable=SC2016
-    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host wise.malcolm.local;\n    }\n' nginx/nginx.conf
+    sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host nfa.malcolm.local;\n    }\n' nginx/nginx.conf
     touch "${CONFIG_DIR}/nginx_done"
 }
 
@@ -191,8 +188,6 @@ function malcolm-configure-arkime(){
     sed -i -e "s/spiDataMaxIndices=.*/spiDataMaxIndices=10000/" arkime/etc/config.ini
     sed -i -e "s/valueAutoComplete=false/valueAutoComplete=true/" arkime/etc/config.ini
     sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
-    sed -i -e "s/--insecure/--insecure --webconfig/" arkime/scripts/wise_service.sh
-    sed -i -e 's#curl -fsS --output /dev/null "http://127.0.0.1:8081/fields?ver=1"#true#' arkime/scripts/initarkime.sh
     cp ~/malir/resources/config-local.ini arkime/etc
     touch "${CONFIG_DIR}/arkime_done"
 }
