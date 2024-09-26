@@ -58,10 +58,25 @@ To upload files via command line connect to **sftp://USERNAME@localhost:8022/fil
 
 The easiest solution is to just to rerun **install.sh** and chose _N_ when asked about building.
 
+## Changes to files in Malcolm
+
+Containers are built with `docker-compose-dev.yml` as the argument to `~/Malcolm/scripts/build.py`. The following scripts are run that can change files in Malcolm:
+
+- ~/Malcolm/scripts/install.py 
+- ~/Malcolm/scripts/control.py
+
+Changed files:
+
+- ~/Malcolm/config/arkime-secret.env - Add password for MaxMind
+- ~/Malcolm/zeek/intel/Zeek-Intelligence-Feeds/main.zeek - Add feeds from Critical Path Security
+- ~/Malcolm/nginx/nginx.conf - Add `nfa` to the proxy
+- ~/Malcolm/arkime/etc/config.ini - Modify settings for Arkime
+- ~/Malcolm/arkime/etc/config-local.ini - Add this file
+
 ## TODO
 
 - [ ] Add support to tag TOR exit nodes.
-- [ ] Try and see if [nfa][nfa] is useful.
+- [x] Try and see if [nfa][nfa] is useful.
 - [x] Add more right-click functionality to Arkime
 - [ ] More plugins to Zeek?
 - [ ] Look at the Malcolm [api][api] and the examples searching for *user-agent* and more.
@@ -69,7 +84,7 @@ The easiest solution is to just to rerun **install.sh** and chose _N_ when asked
 - [ ] Read more about freq and how it is used in Malcolm.
 - [ ] Add support for Rita.
 - [ ] *cidr-map.txt* - should always be set
-- [ ] Look at *malcolm_severity.yaml* and if I should tune the values for my usecases.
+- [ ] Look at *malcolm_severity.yaml* and if I should tune the values for my use cases.
 - [ ] STIX and [TAXII][sta] in Malcolm
 - [ ] MISP [feeds][mis] in Malcolm
 - [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
