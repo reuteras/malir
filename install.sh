@@ -119,7 +119,7 @@ function malcolm-build() {
             malcolm-maxmind
         fi
     fi
-    COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh docker-compose-dev.yml
+    COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ./scripts/build.sh ./docker-compose-dev.yml "$@"
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
@@ -240,7 +240,7 @@ test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
 test -e "${CONFIG_DIR}/nfa_done" || add-nfa
-test -e "${CONFIG_DIR}/build_done" || malcolm-build
+test -e "${CONFIG_DIR}/build_done" || malcolm-build "$@"
 
 info-message "Installation done."
 info-message "Start Malcolm by changing to the ~/Malcolm directory and run ./scripts/start."
