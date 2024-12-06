@@ -82,7 +82,7 @@ function malcolm-configure() {
         --live-capture-arkime false \
         --logstash-expose true \
         --malcolm-profile true \
-        --netbox false \
+        --netbox true \
         --opensearch-url http://opensearch:9200 \
         --auto-arkime true \
         --auto-freq true \
@@ -119,7 +119,10 @@ function malcolm-build() {
             malcolm-maxmind
         fi
     fi
-    COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$@"
+    for image in $(grep -E "^  [a-z-]+:" ../Malcolm/docker-compose.yml | grep -vE "(default|-live)" | tr -d ' :') ; do
+        echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$image"
+    done
+    echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$@"
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
