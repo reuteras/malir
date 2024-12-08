@@ -119,9 +119,11 @@ function malcolm-build() {
             malcolm-maxmind
         fi
     fi
-    for image in $(grep -E "^  [a-z-]+:" ../Malcolm/docker-compose.yml | grep -vE "(default|-live)" | tr -d ' :') ; do
-        echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$image"
-    done
+    if [[ "$1" == "" ]]; then 
+        for image in $(grep -E "^  [a-z-]+:" ../Malcolm/docker-compose.yml | grep -vE "(default|-live)" | tr -d ' :') ; do
+            echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$image"
+        done
+    fi
     echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$@"
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
