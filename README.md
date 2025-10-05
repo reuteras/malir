@@ -62,7 +62,7 @@ The easiest solution is to just to rerun **install.sh** and chose _N_ when asked
 
 Containers are built with `docker-compose-dev.yml` as the argument to `~/Malcolm/scripts/build.py`. The following scripts are run that can change files in Malcolm:
 
-- ~/Malcolm/scripts/install.py 
+- ~/Malcolm/scripts/install.py
 - ~/Malcolm/scripts/control.py
 
 Changed files:
@@ -79,12 +79,12 @@ Changed files:
 - [x] Try and see if [nfa][nfa] is useful.
 - [x] Add more right-click functionality to Arkime
 - [ ] More plugins to Zeek?
-- [ ] Look at the Malcolm [api][api] and the examples searching for *user-agent* and more.
+- [ ] Look at the Malcolm [api][api] and the examples searching for _user-agent_ and more.
 - [ ] Read [Ingesting Third-Party Logs][itl] and [Forwarding Third-Party Logs to Malcolm][ftl]
 - [ ] Read more about freq and how it is used in Malcolm.
 - [ ] Add support for Rita.
-- [ ] *cidr-map.txt* - should always be set
-- [ ] Look at *malcolm_severity.yaml* and if I should tune the values for my use cases.
+- [ ] cidr-map.txt_ - should always be set
+- [ ] Look at `malcolm_severity.yaml` and if I should tune the values for my use cases.
 - [ ] STIX and [TAXII][sta] in Malcolm
 - [ ] MISP [feeds][mis] in Malcolm
 - [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
@@ -93,8 +93,6 @@ Changed files:
 
   [ale]: https://github.com/cisagov/Malcolm#alerting
   [api]: https://github.com/cisagov/Malcolm#api
-  [con]: https://github.com/cisagov/Malcolm/blob/main/docs/contributing/README.md
-  [cps]: https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds
   [ftl]: https://github.com/cisagov/Malcolm/blob/main/scripts/third-party-logs/README.md
   [itl]: https://github.com/cisagov/Malcolm#ingesting-third-party-logs
   [las]: https://127.0.0.1/sessions
@@ -107,7 +105,4 @@ Changed files:
   [maw]: https://www.malware-traffic-analysis.net/
   [mis]: https://github.com/cisagov/Malcolm#misp
   [nfa]: https://github.com/ansv46/nfa.git
-  [san]: https://www.sans.org/blog/sans-zoom-backgrounds/
   [sta]: https://github.com/cisagov/Malcolm#stix-and-taxii
-  [upd]: https://github.com/cisagov/Malcolm#UpgradePlan
-  [zif]: https://github.com/cisagov/Malcolm#zeek-intelligence-framework
