@@ -2,7 +2,7 @@
 
 CONFIG_DIR="${HOME}/.config/manir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
-MALCOLM_VERSION="v25.09.0"
+MALCOLM_VERSION="v25.11.0"
 export PATH
 export DEBIAN_FRONTEND=noninteractive
 
