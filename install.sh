@@ -34,12 +34,12 @@ function update-os(){
     sudo apt update -qq > /dev/null 2>&1
     info-message "Running apt dist-upgrade."
     # shellcheck disable=SC2024
-    while ! sudo DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade --force-yes > /dev/null 2>&1 ; do
+    while ! sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade --force-yes > /dev/null 2>&1 ; do
         info-message "APT busy. Will retry in 10 seconds."
         sleep 10
     done
     info-message "Running apt install to install needed packages."
-    sudo DEBIAN_FRONTEND=noninteractive apt -y install apache2-utils ca-certificates curl openssl python3-dotenv python3-pretty-yaml > /dev/null 2>&1
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install apache2-utils ca-certificates curl openssl python3-ruamel.yaml python3-dotenv python3-dialog dialog> /dev/null 2>&1
     if which snap > /dev/null ; then
         info-message "Update snap."
         sudo snap refresh
