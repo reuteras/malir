@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_DIR="${HOME}/.config/manir"
+CONFIG_DIR="${HOME}/.config/malir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
 MALCOLM_VERSION="v25.12.1"
 export PATH

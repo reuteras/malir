@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_DIR="${HOME}/.config/manir"
+CONFIG_DIR="${HOME}/.config/malir"
 
 echo "wireshark-common wireshark-common/install-setuid boolean true" | \
     sudo debconf-set-selections
@@ -62,7 +62,7 @@ function install-google-chrome() {
 # Set different background
 function malcolm-background() {
     info-message "Set background."
-    gsettings set org.gnome.desktop.background picture-uri "file:///home/${USER}/manir/resources/bg.jpg"
+    gsettings set org.gnome.desktop.background picture-uri "file:///home/${USER}/malir/resources/bg.jpg"
     touch "${CONFIG_DIR}/background_done"
 }
 
