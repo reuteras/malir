@@ -71,26 +71,7 @@ function install-docker(){
 function malcolm-configure() {
     info-message "Starting automatic configuration of Malcolm"
     cd ~/Malcolm || exit
-    echo "n" | python3 scripts/install.py --defaults \
-        --dark-mode true \
-        --extracted-file-server true \
-        --extracted-file-server-password infected \
-        --file-extraction all \
-        --file-preservation quarantined \
-        --file-scan-rule-update true \
-        --filebeat-tcp-expose true \
-        --live-capture-arkime false \
-        --logstash-expose true \
-        --malcolm-profile true \
-        --netbox true \
-        --opensearch-url http://opensearch:9200 \
-        --auto-arkime true \
-        --auto-freq true \
-        --auto-oui true \
-        --auto-suricata true \
-        --auto-zeek true \
-        --sftp-expose true \
-        --suricata-rule-update true 
+    sudo python3 scripts/install.py --non-interactive
     touch nginx/htpasswd
     # shellcheck disable=SC2016
     python3 scripts/control.py --auth-noninteractive \
