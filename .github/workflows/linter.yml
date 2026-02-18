@@ -52,3 +52,4 @@ jobs:
           VALIDATE_JSON_PRETTIER: false
           VALIDATE_YAML_PRETTIER: false
           VALIDATE_SHELL_SHFMT: false
+          VALIDATE_SPELL_CODESPELL: false
