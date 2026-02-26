@@ -83,7 +83,7 @@ function malcolm-configure() {
         .configuration.dashboardsDarkMode = true
         | .configuration.reverseDns = true
         | .configuration.pcapNodeName = "Engineering Workstation"
-    EOF
+EOF
     jq -f "${JQ_FILE}" "${SETTINGS_FILE}" | sponge "${SETTINGS_FILE}"
 
     # import the modified configuration
