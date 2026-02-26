@@ -39,7 +39,7 @@ function update-os(){
         sleep 10
     done
     info-message "Running apt install to install needed packages."
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install apache2-utils ca-certificates curl openssl python3-ruamel.yaml python3-dotenv python3-dialog dialog> /dev/null 2>&1
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install apache2-utils ca-certificates curl moreutils openssl python3-ruamel.yaml python3-dotenv python3-dialog dialog> /dev/null 2>&1
     if which snap > /dev/null ; then
         info-message "Update snap."
         sudo snap refresh
@@ -71,6 +71,28 @@ function install-docker(){
 function malcolm-configure() {
     info-message "Starting automatic configuration of Malcolm"
     cd ~/Malcolm || exit
+    
+    # From https://malcolm.fyi/docs/malcolm-config.html#CommandLineConfig
+    # export the current configuration to a JSON file without modifying anything in ./config/
+    SETTINGS_FILE="$(mktemp --suffix=.json)"
+    ./scripts/configure --dry-run --non-interactive --export-malcolm-config-file "${SETTINGS_FILE}"
+
+    # use JQ To set whatever options in the exported JSON configuration file you wish to change
+    JQ_FILE="$(mktemp --suffix=.jq)"
+    tee "${JQ_FILE}" >/dev/null <<EOF
+        .configuration.dashboardsDarkMode = true
+        | .configuration.reverseDns = true
+        | .configuration.pcapNodeName = "Engineering Workstation"
+    EOF
+    jq -f "${JQ_FILE}" "${SETTINGS_FILE}" | sponge "${SETTINGS_FILE}"
+
+    # import the modified configuration
+    ./scripts/configure --non-interactive --import-malcolm-config-file "${SETTINGS_FILE}"
+
+    # clean up
+    rm -f "${SETTINGS_FILE}" "${JQ_FILE}"
+    # End from https://malcolm.fyi/docs/malcolm-config.html#CommandLineConfig
+
     sudo python3 scripts/install.py --non-interactive
     touch nginx/htpasswd
     # shellcheck disable=SC2016
@@ -100,12 +122,7 @@ function malcolm-build() {
             malcolm-maxmind
         fi
     fi
-    if [[ "$1" == "" ]]; then 
-        for image in $(grep -E "^  [a-z-]+:" ../Malcolm/docker-compose.yml | grep -vE "(default|-live)" | tr -d ' :') ; do
-            echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$image"
-        done
-    fi
-    echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml "$@"
+    echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
@@ -226,7 +243,7 @@ test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
 test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
 test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
 test -e "${CONFIG_DIR}/nfa_done" || add-nfa
-test -e "${CONFIG_DIR}/build_done" || malcolm-build "$@"
+test -e "${CONFIG_DIR}/build_done" || malcolm-build
 
 info-message "Installation done."
 info-message "Start Malcolm by changing to the ~/Malcolm directory and run ./scripts/start."
