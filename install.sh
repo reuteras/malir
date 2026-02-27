@@ -44,6 +44,7 @@ function update-os(){
         info-message "Update snap."
         sudo snap refresh
     fi
+    sudo sed -i -e "s/nameserver .*/nameserver 8.8.8.8/" /etc/resolv.conf
     touch "${CONFIG_DIR}/os_done"
 }
 
