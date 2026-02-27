@@ -94,14 +94,20 @@ EOF
     # End from https://malcolm.fyi/docs/malcolm-config.html#CommandLineConfig
 
     sudo python3 scripts/install.py --non-interactive
-    touch nginx/htpasswd
     # shellcheck disable=SC2016
-    python3 scripts/control.py --auth-noninteractive \
+    python3 scripts/auth_setup \
+        --auth-noninteractive \
+        --auth-method basic \
         --auth-admin-username admin \
         --auth-admin-password-htpasswd '$2y$05$N37mG4dLlQAHccESse3mL.6NGqLOqo/Vf5DpKoEmEeAL5mk8i15Ja' \
         --auth-admin-password-openssl '$1$RD8JxZlf$2aHwWP71GY3kKjMNfjIKu0' \
+        --auth-arkime-password ArkimePassword123 \
         --auth-generate-webcerts \
-        --auth-generate-fwcerts
+        --auth-generate-fwcerts \
+        --auth-generate-netbox-passwords \
+        --auth-generate-redis-password \
+        --auth-generate-postgres-password \
+        --auth-generate-opensearch-internal-creds
     info-message "Configuration of Malcolm done."
     touch "${CONFIG_DIR}/configure_done"
     info-message "Reboot to update settings. Then run the script install.sh again."
@@ -122,6 +128,7 @@ function malcolm-build() {
             malcolm-maxmind
         fi
     fi
+    sed -i -e "s/200000000/100000000/" scripts/build.sh
     echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy

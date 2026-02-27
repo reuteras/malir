@@ -2,7 +2,7 @@
     image: reuteras/nfa:latest
     hostname: nfa
     volumes:
-      - ./nfa/config.ini:/nfa/config.ini
+      - ./nfa/config.ini:/app/config.ini
     networks:
       - default
     healthcheck:
