@@ -83,7 +83,6 @@ function malcolm-configure() {
     tee "${JQ_FILE}" >/dev/null <<EOF
         .configuration.dashboardsDarkMode = true
         | .configuration.reverseDns = true
-        | .configuration.pcapNodeName = "Engineering Workstation"
 EOF
     jq -f "${JQ_FILE}" "${SETTINGS_FILE}" | sponge "${SETTINGS_FILE}"
 
@@ -97,6 +96,7 @@ EOF
     sudo python3 scripts/install.py --non-interactive
     # shellcheck disable=SC2016
     python3 scripts/auth_setup \
+        --auth \
         --auth-noninteractive \
         --auth-method basic \
         --auth-admin-username admin \
