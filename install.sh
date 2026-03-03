@@ -44,7 +44,6 @@ function update-os(){
         info-message "Update snap."
         sudo snap refresh
     fi
-    sudo sed -i -e "s/nameserver .*/nameserver 8.8.8.8/" /etc/resolv.conf
     touch "${CONFIG_DIR}/os_done"
 }
 
@@ -120,6 +119,7 @@ EOF
 function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
+    sudo sed -i -e "s/nameserver .*/nameserver 8.8.8.8/" /etc/resolv.conf
     cd ~/Malcolm || exit
     if [[ -z ${MAXMIND_KEY} ]]; then
         # shellcheck disable=SC1091
