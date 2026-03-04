@@ -82,6 +82,9 @@ function malcolm-configure() {
     tee "${JQ_FILE}" >/dev/null <<EOF
         .configuration.dashboardsDarkMode = true
         | .configuration.reverseDns = true
+        | .configuration.fileCarveHttpServer = true
+        | .configuration.fileCarveMode = "all"
+        | .configuration.filePreserveMode = "all"
 EOF
     jq -f "${JQ_FILE}" "${SETTINGS_FILE}" | sponge "${SETTINGS_FILE}"
 
