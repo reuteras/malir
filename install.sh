@@ -108,7 +108,7 @@ EOF
         --auth-generate-webcerts \
         --auth-generate-fwcerts \
         --auth-generate-netbox-passwords \
-        --auth-generate-redis-password \
+        --auth-generate-valkey-password \
         --auth-generate-postgres-password \
         --auth-generate-opensearch-internal-creds
     info-message "Configuration of Malcolm done."
