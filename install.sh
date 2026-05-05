@@ -2,7 +2,7 @@
 
 CONFIG_DIR="${HOME}/.config/malir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
-MALCOLM_VERSION="v26.04.1"
+MALCOLM_VERSION="v26.05.0"
 export PATH
 export DEBIAN_FRONTEND=noninteractive
 
