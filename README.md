@@ -90,7 +90,6 @@ Changed files:
 - [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
 - [ ] Look at _smtpIpHeaders_ in Arkime settings
 
-
   [ale]: https://github.com/cisagov/Malcolm#alerting
   [api]: https://github.com/cisagov/Malcolm#api
   [ftl]: https://github.com/cisagov/Malcolm/blob/main/scripts/third-party-logs/README.md

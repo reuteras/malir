@@ -71,7 +71,7 @@ function install-docker(){
 function malcolm-configure() {
     info-message "Starting automatic configuration of Malcolm"
     cd ~/Malcolm || exit
-    
+
     # From https://malcolm.fyi/docs/malcolm-config.html#CommandLineConfig
     # export the current configuration to a JSON file without modifying anything in ./config/
     SETTINGS_FILE="$(mktemp --suffix=.json)"

@@ -26,4 +26,3 @@ for file in *.pcap.zip ; do
     unzip -P "${password}" "${file}" > /dev/null 2>&1
     rm "${file}"
  done
-    
