@@ -87,7 +87,7 @@ Changed files:
 - [ ] Look at `malcolm_severity.yaml` and if I should tune the values for my use cases.
 - [ ] STIX and [TAXII][sta] in Malcolm
 - [ ] MISP [feeds][mis] in Malcolm
-- [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
+- [ ] Look at [alerting][ale] `event.dataset` set to `alerting`
 - [ ] Look at _smtpIpHeaders_ in Arkime settings
 
   [ale]: https://github.com/cisagov/Malcolm#alerting
