@@ -4,15 +4,15 @@ A collection of scripts to simplify the install of [Malcolm][mal] for incident r
 
 ## Installation
 
-Scripts are only tested on Ubuntu 22.04 LTS and Debian 12.1. The scripts should work on amd64 as well as on arm64 (Apple M1 and later).Its recommended running the script in a virtual machine.
+Scripts are only tested on Debian 13 running on arm64 (Apple M1 and later). It's recommended running the script in a virtual machine.
 
-Start by cloning the repository and entering it. If you don't have git installed start with **sudo apt install -y git**. It is recommended that you check out the repository in your home directory.
+Start by cloning the repository and entering it. If you don't have git installed start with **sudo apt install -y git**. The script assumes that the repo is checked out in your home directory.
 
     cd
     git clone https://github.com/reuteras/malir.git
     cd malir
 
-Before the installation is finished you will have to logout one time (update group membership for Docker) and reboot the computer one time (updated settings). You have to rerun the **install.sh** script after logging out and rebooting the computer. The **install.sh** script will tell you when to logout and reboot. To start the process run the following command in the malir directory.
+Before the installation is finished you will have to reboot the computer one time (updated settings and group memberships). You have to rerun the **install.sh** script after logging out and rebooting the computer. The **install.sh** script will tell you when to logout and reboot. To start the process run the following command in the malir directory.
 
     ./install.sh
 
