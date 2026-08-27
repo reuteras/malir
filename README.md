@@ -22,7 +22,7 @@ After the installation is finished you can optionally run the following command 
 
 Other scripts:
 
-- clean.sh - Clean apt and run **docker system prune**
+- clean.sh - Clean unused apt packages and the apt package cache.
 - download-test-pcaps.sh - Downloads some sample pcaps from [Malware-Traffic-Analysis.net][maw].
 - update.sh - Updates Zeek feeds. Must restart Malcolm afterwards.
 
@@ -35,7 +35,7 @@ The script will set the username to _admin_ and the password will be _password_.
 Start Malcolm:
 
     cd ~/Malcolm
-    ./script/start
+    ./scripts/start
 
 To check when Logstash is up and running you can run the following command in a separate terminal.
 
@@ -60,7 +60,7 @@ The easiest solution is to just to rerun **install.sh** and chose _N_ when asked
 
 ## Changes to files in Malcolm
 
-Containers are built with `docker-compose-dev.yml` as the argument to `~/Malcolm/scripts/build.py`. The following scripts are run that can change files in Malcolm:
+Containers are built with `docker-compose-dev.yml` as the argument to `~/Malcolm/scripts/build.sh`. The following scripts are run that can change files in Malcolm:
 
 - ~/Malcolm/scripts/install.py
 - ~/Malcolm/scripts/control.py

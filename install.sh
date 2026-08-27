@@ -5,6 +5,8 @@ set -Eeuo pipefail
 CONFIG_DIR="${HOME}/.config/malir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
 MALCOLM_VERSION="v26.08.0"
+MALCOLM_DIR="${HOME}/Malcolm"
+MALIR_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export PATH
 export DEBIAN_FRONTEND=noninteractive
 
@@ -26,30 +28,162 @@ function error-exit-message() {
     exit 1
 }
 
+function require-supported-platform() {
+    # shellcheck disable=SC1091
+    source /etc/os-release
+    [[ ${ID:-} == "debian" && ${VERSION_ID:-} == "13" ]] ||
+        error-exit-message "This installer supports Debian 13 only."
+    [[ $(dpkg --print-architecture) == "arm64" ]] ||
+        error-exit-message "This installer supports arm64 only."
+}
+
+function require-single-match() {
+    local pattern="$1"
+    local file="$2"
+    local count
+    count=$(grep -Ec -- "${pattern}" "${file}" || true)
+    [[ ${count} -eq 1 ]] ||
+        error-exit-message "Expected one match for '${pattern}' in ${file}, found ${count}."
+}
+
+function replace-once() {
+    local pattern="$1"
+    local replacement="$2"
+    local expected="$3"
+    local file="$4"
+
+    if grep -Eq -- "${expected}" "${file}"; then
+        return
+    fi
+    require-single-match "${pattern}" "${file}"
+    sed -i -e "s|${pattern}|${replacement}|" "${file}"
+    grep -Eq -- "${expected}" "${file}" ||
+        error-exit-message "Failed to update ${file}."
+}
+
+function docker-ready() {
+    docker --version >/dev/null 2>&1 && docker compose version >/dev/null 2>&1
+}
+
+function os-ready() {
+    local package
+    for package in apache2-utils ca-certificates curl moreutils openssl python3-ruamel.yaml python3-dotenv python3-dialog dialog; do
+        dpkg-query -W -f='${db:Status-Status}\n' "${package}" 2>/dev/null | grep -Fqx "installed"
+    done
+}
+
+function maxmind-ready() {
+    local file="${MALCOLM_DIR}/config/arkime-secret.env"
+    [[ -f ${file} ]] &&
+        grep -Eq '^MAXMIND_GEOIP_DB_ACCOUNT_ID=.+$' "${file}" &&
+        ! grep -Eq '^MAXMIND_GEOIP_DB_ACCOUNT_ID=0$' "${file}" &&
+        grep -Eq '^MAXMIND_GEOIP_DB_LICENSE_KEY=.+$' "${file}" &&
+        ! grep -Eq '^MAXMIND_GEOIP_DB_LICENSE_KEY=0$' "${file}"
+}
+
+function configure-ready() {
+    local settings_file
+    settings_file=$(mktemp --suffix=.json)
+    if ! (cd "${MALCOLM_DIR}" && ./scripts/configure --dry-run --non-interactive --export-malcolm-config-file "${settings_file}" >/dev/null); then
+        rm -f "${settings_file}"
+        return 1
+    fi
+    if jq -e '
+        .configuration.dashboardsDarkMode == true and
+        .configuration.reverseDns == true and
+        .configuration.fileCarveHttpServer == true and
+        .configuration.fileCarveMode == "all" and
+        .configuration.filePreserveMode == "all"
+    ' "${settings_file}" >/dev/null; then
+        rm -f "${settings_file}"
+        return 0
+    fi
+    rm -f "${settings_file}"
+    return 1
+}
+
+function zeek-intel-ready() {
+    [[ -f ${MALCOLM_DIR}/zeek/intel/Zeek-Intelligence-Feeds/main.zeek ]]
+}
+
+function arkime-ready() {
+    [[ -f ${MALCOLM_DIR}/arkime/etc/config-local.ini ]] &&
+        cmp -s "${MALIR_DIR}/resources/config-local.ini" "${MALCOLM_DIR}/arkime/etc/config-local.ini" &&
+        grep -Fqx 'includes=/opt/arkime/etc/config-local.ini' "${MALCOLM_DIR}/arkime/etc/config.ini"
+}
+
+function nginx-ready() {
+    # shellcheck disable=SC2016
+    grep -Fq 'upstream nfa {' "${MALCOLM_DIR}/nginx/nginx.conf" &&
+        grep -Fq 'proxy_pass http://nfa/$1;' "${MALCOLM_DIR}/nginx/nginx.conf"
+}
+
+function nfa-ready() {
+    [[ -f ${MALCOLM_DIR}/nfa/config.ini ]] &&
+        cmp -s "${MALIR_DIR}/resources/nfa-config.ini" "${MALCOLM_DIR}/nfa/config.ini" &&
+        (cd "${MALCOLM_DIR}" && docker compose -f docker-compose.yml config --quiet &&
+            docker compose -f docker-compose.yml config --services | grep -Fqx nfa) &&
+        (cd "${MALCOLM_DIR}" && docker compose -f docker-compose-dev.yml config --quiet &&
+            docker compose -f docker-compose-dev.yml config --services | grep -Fqx nfa)
+}
+
+function add-nfa-compose-service() {
+    local compose_file="$1"
+    local service_file="$2"
+    if docker compose -f "${compose_file}" config --services 2>/dev/null | grep -Fqx nfa; then
+        return
+    fi
+    require-single-match '^services:$' "${compose_file}"
+    sed -i "/services:/r ${service_file}" "${compose_file}"
+}
+
+function build-ready() {
+    local image
+    local found=false
+    while IFS= read -r image; do
+        [[ -n ${image} ]] || continue
+        found=true
+        docker image inspect "${image}" >/dev/null 2>&1 || return 1
+    done < <(cd "${MALCOLM_DIR}" && docker compose -f docker-compose-dev.yml config --images)
+    [[ ${found} == true ]]
+}
+
+function stage-complete() {
+    local marker="$1"
+    local validator="$2"
+    [[ -e ${CONFIG_DIR}/${marker} ]] && "${validator}"
+}
+
 # Function to update Ubuntu
 function update-os() {
     info-message "Running apt update."
     # shellcheck disable=SC2024
-    sudo apt update -qq >/dev/null 2>&1
+    sudo apt-get update
     info-message "Running apt dist-upgrade."
-    # shellcheck disable=SC2024
-    while ! sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade --force-yes >/dev/null 2>&1; do
-        info-message "APT busy. Will retry in 10 seconds."
+    local attempt
+    for attempt in {1..6}; do
+        if sudo DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade; then
+            break
+        fi
+        [[ ${attempt} -lt 6 ]] || error-exit-message "APT dist-upgrade failed after 6 attempts."
+        info-message "APT failed or is busy. Retrying in 10 seconds (${attempt}/6)."
         sleep 10
     done
     info-message "Running apt install to install needed packages."
-    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install apache2-utils ca-certificates curl moreutils openssl python3-ruamel.yaml python3-dotenv python3-dialog dialog >/dev/null 2>&1
-    if which snap >/dev/null; then
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install apache2-utils ca-certificates curl moreutils openssl python3-ruamel.yaml python3-dotenv python3-dialog dialog
+    if command -v snap >/dev/null; then
         info-message "Update snap."
         sudo snap refresh
     fi
+    os-ready || error-exit-message "Required operating-system packages are missing after installation."
     touch "${CONFIG_DIR}/os_done"
 }
 
 # Install Docker
 function install-docker() {
-    if dpkg --list | grep docker >/dev/null; then
+    if docker-ready; then
         touch "${CONFIG_DIR}/docker_done"
+        return
     fi
     sudo install -m 0755 -d /etc/apt/keyrings >/dev/null 2>&1
     sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc >/dev/null 2>&1
@@ -59,16 +193,17 @@ function install-docker() {
         "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
             $(. /etc/os-release && echo "$VERSION_CODENAME") stable" |
         sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-    sudo apt-get update >/dev/null 2>&1
+    sudo apt-get update
     info-message "Install Docker."
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin >/dev/null 2>&1
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    docker-ready || error-exit-message "Docker or the Docker Compose plugin is not available after installation."
     touch "${CONFIG_DIR}/docker_done"
 }
 
 # Function to configure Malcolm
 function malcolm-configure() {
     info-message "Starting automatic configuration of Malcolm"
-    cd ~/Malcolm || exit
+    cd "${MALCOLM_DIR}" || exit
 
     # From https://malcolm.fyi/docs/malcolm-config.html#CommandLineConfig
     # export the current configuration to a JSON file without modifying anything in ./config/
@@ -109,6 +244,7 @@ EOF
         --auth-generate-valkey-password \
         --auth-generate-postgres-password \
         --auth-generate-opensearch-internal-creds
+    configure-ready || error-exit-message "Malcolm configuration validation failed."
     info-message "Configuration of Malcolm done."
     touch "${CONFIG_DIR}/configure_done"
     info-message "Reboot to update settings. Then run the script install.sh again."
@@ -120,23 +256,27 @@ function malcolm-build() {
     info-message "Starting build process for docker containers."
     info-message "This will take some time..."
     sudo sed -i -e "s/nameserver .*/nameserver 8.8.8.8/" /etc/resolv.conf
-    cd ~/Malcolm || exit
-    if [[ -z ${MAXMIND_KEY} ]]; then
+    cd "${MALCOLM_DIR}" || exit
+    MAXMIND_ID="${MAXMIND_ID:-${MAXMIND_GEOIP_DB_ACCOUNT_ID:-}}"
+    MAXMIND_KEY="${MAXMIND_KEY:-${MAXMIND_GEOIP_DB_LICENSE_KEY:-}}"
+    if [[ -z ${MAXMIND_ID} || -z ${MAXMIND_KEY} ]]; then
         # shellcheck disable=SC1091
         source "${HOME}/Malcolm/config/arkime-secret.env"
         MAXMIND_ID="${MAXMIND_GEOIP_DB_ACCOUNT_ID}"
         MAXMIND_KEY="${MAXMIND_GEOIP_DB_LICENSE_KEY}"
-        if [[ -z ${MAXMIND_KEY} ]]; then
+        if [[ -z ${MAXMIND_ID} || -z ${MAXMIND_KEY} ]]; then
             malcolm-maxmind
+            MAXMIND_ID="${MAXMIND_ACCOUNT}"
         fi
     fi
-    sed -i -e "s/200000000/100000000/" scripts/build.sh
+    replace-once '200000000' '100000000' '100000000' scripts/build.sh
     echo "N" | MAXMIND_GEOIP_DB_ACCOUNT_ID="${MAXMIND_ID}" MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
         exit
     fi
+    build-ready || error-exit-message "One or more configured container images are missing after the build."
     touch "${CONFIG_DIR}/build_done"
 }
 
@@ -145,7 +285,7 @@ function malcolm-maxmind() {
     info-message "The build process needs your Maxmind API Key (free)"
     info-message "Get it from https://www.maxmind.com/"
     echo ""
-    cd ~/Malcolm || exit
+    cd "${MALCOLM_DIR}" || exit
     MAXMIND_ACCOUNT=""
     MAXMIND_KEY=""
     while [[ -z "${MAXMIND_ACCOUNT}" ]]; do
@@ -164,59 +304,72 @@ function malcolm-maxmind() {
     if grep "MAXMIND_GEOIP_DB_LICENSE_KEY=0" config/arkime-secret.env >/dev/null 2>&1; then
         error-exit-message "Maxmind GeoIP License key not updated, exiting."
     fi
+    maxmind-ready || error-exit-message "MaxMind configuration validation failed."
     touch "${CONFIG_DIR}/maxmind_done"
 }
 
 # Function to add intel from Critical Path Security to Zeek
 function malcolm-zeek-intel() {
     info-message "Clone Zeek intel from Critical Path Security"
+    if zeek-intel-ready; then
+        touch "${CONFIG_DIR}/zeek_intel_done"
+        return
+    fi
     CDIR="$(pwd)"
-    cd ~/Malcolm/zeek/intel || exit
+    cd "${MALCOLM_DIR}/zeek/intel" || exit
     git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git >/dev/null 2>&1
-    cd ~/Malcolm || exit
-    sed -i -e "s_/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds_/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds_" zeek/intel/Zeek-Intelligence-Feeds/main.zeek
+    cd "${MALCOLM_DIR}" || exit
+    replace-once '/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds' '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' zeek/intel/Zeek-Intelligence-Feeds/main.zeek
     cd "${CDIR}" || exit
+    zeek-intel-ready || error-exit-message "Zeek Intelligence Feeds installation validation failed."
     touch "${CONFIG_DIR}/zeek_intel_done"
 }
 
 # Change nginx configuration - add nfa
 function nginx-configure() {
     info-message "Configure nginx."
-    cd ~/Malcolm || exit
+    cd "${MALCOLM_DIR}" || exit
+    if nginx-ready; then
+        touch "${CONFIG_DIR}/nginx_done"
+        return
+    fi
+    require-single-match '^  upstream upload' nginx/nginx.conf
+    require-single-match '^    # Malcolm file upload' nginx/nginx.conf
     sed -i -e "/  upstream upload/i \ \ upstream nfa {\n    server nfa:5001;\n  }\n" nginx/nginx.conf
     # shellcheck disable=SC2016
     sed -i -e '/    # Malcolm file upload/i \ \ \ \ # nfa\n    location ~* \/nfa\/(.*) {\n      proxy_pass http:\/\/nfa\/\$1;\n      proxy_redirect off;\n      proxy_set_header Host nfa.malcolm.local;\n    }\n' nginx/nginx.conf
+    nginx-ready || error-exit-message "Failed to add the NFA nginx configuration."
     touch "${CONFIG_DIR}/nginx_done"
 }
 
 # Function to change Arkime configuration
 function malcolm-configure-arkime() {
     info-message "Configure Arkime"
-    cd ~/Malcolm || exit
-    sed -i -e "s/magicMode=basic/magicMode=both/" arkime/etc/config.ini
-    sed -i -e "s/parseDNSRecordAll=false/parseDNSRecordAll=true/" arkime/etc/config.ini
-    sed -i -e "s/parseHTTPHeaderRequestAll=false/parseHTTPHeaderRequestAll=true/" arkime/etc/config.ini
-    sed -i -e "s/parseHTTPHeaderResponseAll=false/parseHTTPHeaderResponseAll=true/" arkime/etc/config.ini
-    sed -i -e "s/parseQSValue=false/parseQSValue=true/" arkime/etc/config.ini
-    sed -i -e "s/parseSMTPHeaderAll=false/parseSMTPHeaderAll=true/" arkime/etc/config.ini
-    sed -i -e "s/supportSha256=false/supportSha256=true/" arkime/etc/config.ini
-    sed -i -e "s/maxReqBody=.*/maxReqBody=0/" arkime/etc/config.ini
-    sed -i -e "s/spiDataMaxIndices=.*/spiDataMaxIndices=10000/" arkime/etc/config.ini
-    sed -i -e "s/valueAutoComplete=false/valueAutoComplete=true/" arkime/etc/config.ini
-    sed -i -e "s_# implicit.*_includes=/opt/arkime/etc/config-local.ini_" arkime/etc/config.ini
-    cp ~/malir/resources/config-local.ini arkime/etc
+    cd "${MALCOLM_DIR}" || exit
+    replace-once '^magicMode=basic$' 'magicMode=both' 'magicMode=both' arkime/etc/config.ini
+    replace-once '^parseDNSRecordAll=false$' 'parseDNSRecordAll=true' 'parseDNSRecordAll=true' arkime/etc/config.ini
+    replace-once '^parseHTTPHeaderRequestAll=false$' 'parseHTTPHeaderRequestAll=true' 'parseHTTPHeaderRequestAll=true' arkime/etc/config.ini
+    replace-once '^parseHTTPHeaderResponseAll=false$' 'parseHTTPHeaderResponseAll=true' 'parseHTTPHeaderResponseAll=true' arkime/etc/config.ini
+    replace-once '^parseQSValue=false$' 'parseQSValue=true' 'parseQSValue=true' arkime/etc/config.ini
+    replace-once '^parseSMTPHeaderAll=false$' 'parseSMTPHeaderAll=true' 'parseSMTPHeaderAll=true' arkime/etc/config.ini
+    replace-once '^supportSha256=false$' 'supportSha256=true' 'supportSha256=true' arkime/etc/config.ini
+    replace-once '^maxReqBody=.*$' 'maxReqBody=0' 'maxReqBody=0' arkime/etc/config.ini
+    replace-once '^spiDataMaxIndices=.*$' 'spiDataMaxIndices=10000' 'spiDataMaxIndices=10000' arkime/etc/config.ini
+    replace-once '^valueAutoComplete=false$' 'valueAutoComplete=true' 'valueAutoComplete=true' arkime/etc/config.ini
+    replace-once '^# implicit.*$' 'includes=/opt/arkime/etc/config-local.ini' 'includes=/opt/arkime/etc/config-local.ini' arkime/etc/config.ini
+    cp "${MALIR_DIR}/resources/config-local.ini" arkime/etc
+    arkime-ready || error-exit-message "Failed to configure Arkime."
     touch "${CONFIG_DIR}/arkime_done"
 }
 
 function add-nfa() {
     info-message "Add nfa"
-    cd ~/Malcolm || exit
+    cd "${MALCOLM_DIR}" || exit
     [[ -d nfa ]] || git clone https://github.com/reuteras/nfa.git >/dev/null
-    cp ~/malir/resources/nfa-config.ini nfa/config.ini
-    if ! grep "nfa:" docker-compose* >/dev/null 2>&1; then
-        sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose.yml" docker-compose.yml
-        sed -i "/services:/r ${HOME}/malir/resources/nfa-docker-compose-dev.yml" docker-compose-dev.yml
-    fi
+    cp "${MALIR_DIR}/resources/nfa-config.ini" nfa/config.ini
+    add-nfa-compose-service docker-compose.yml "${MALIR_DIR}/resources/nfa-docker-compose.yml"
+    add-nfa-compose-service docker-compose-dev.yml "${MALIR_DIR}/resources/nfa-docker-compose-dev.yml"
+    nfa-ready || error-exit-message "NFA configuration or a Docker Compose file is invalid."
     touch "${CONFIG_DIR}/nfa_done"
 }
 
@@ -225,6 +378,7 @@ function add-nfa() {
 # Create directory for status of installation and setup
 info-message "Start installation of Malcolm and extra tools."
 test -d "${CONFIG_DIR}" || mkdir -p "${CONFIG_DIR}"
+require-supported-platform
 
 # Check for membership in group docker
 if ! grep "docker:" /etc/group | grep -E "(,|:)${USER}" >/dev/null; then
@@ -237,23 +391,34 @@ fi
 
 # Checkout Malcolm in home dir
 cd "${HOME}" || exit
-if ! test -d Malcolm; then
+if ! test -d "${MALCOLM_DIR}"; then
     git clone https://github.com/idaholab/Malcolm.git >/dev/null
-    cd Malcolm || exit
+    cd "${MALCOLM_DIR}" || exit
     git fetch --all --tags
     info-message "Using version $MALCOLM_VERSION of Malcolm."
     git checkout tags/"$MALCOLM_VERSION" 2>&1 | grep Note
+else
+    [[ -d ${MALCOLM_DIR}/.git ]] || error-exit-message "${MALCOLM_DIR} exists but is not a Git checkout."
+    cd "${MALCOLM_DIR}" || exit
+    MALCOLM_REMOTE=$(git remote get-url origin 2>/dev/null || true)
+    [[ ${MALCOLM_REMOTE} == "https://github.com/idaholab/Malcolm.git" ||
+        ${MALCOLM_REMOTE} == "git@github.com:idaholab/Malcolm.git" ]] ||
+        error-exit-message "Existing Malcolm checkout has an unexpected origin: ${MALCOLM_REMOTE:-none}."
+    EXPECTED_COMMIT=$(git rev-list -n 1 "${MALCOLM_VERSION}" 2>/dev/null || true)
+    [[ -n ${EXPECTED_COMMIT} ]] || error-exit-message "Tag ${MALCOLM_VERSION} is not available in the existing Malcolm checkout."
+    [[ $(git rev-parse HEAD) == "${EXPECTED_COMMIT}" ]] ||
+        error-exit-message "Existing Malcolm checkout does not match ${MALCOLM_VERSION}."
 fi
 
-test -e "${CONFIG_DIR}/os_done" || update-os
-test -e "${CONFIG_DIR}/docker_done" || install-docker
-test -e "${CONFIG_DIR}/configure_done" || malcolm-configure
-test -e "${CONFIG_DIR}/maxmind_done" || malcolm-maxmind
-test -e "${CONFIG_DIR}/zeek_intel_done" || malcolm-zeek-intel
-test -e "${CONFIG_DIR}/arkime_done" || malcolm-configure-arkime
-test -e "${CONFIG_DIR}/nginx_done" || nginx-configure
-test -e "${CONFIG_DIR}/nfa_done" || add-nfa
-test -e "${CONFIG_DIR}/build_done" || malcolm-build
+stage-complete os_done os-ready || update-os
+stage-complete docker_done docker-ready || install-docker
+stage-complete configure_done configure-ready || malcolm-configure
+stage-complete maxmind_done maxmind-ready || malcolm-maxmind
+stage-complete zeek_intel_done zeek-intel-ready || malcolm-zeek-intel
+stage-complete arkime_done arkime-ready || malcolm-configure-arkime
+stage-complete nginx_done nginx-ready || nginx-configure
+stage-complete nfa_done nfa-ready || add-nfa
+stage-complete build_done build-ready || malcolm-build
 
 info-message "Installation done."
 info-message "Start Malcolm by changing to the ~/Malcolm directory and run ./scripts/start."
