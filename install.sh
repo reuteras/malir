@@ -367,17 +367,11 @@ function nginx-configure() {
 function malcolm-configure-arkime() {
     info-message "Configure Arkime"
     cd "${MALCOLM_DIR}" || exit
-    replace-once '^magicMode=basic$' 'magicMode=both' 'magicMode=both' arkime/etc/config.ini
-    replace-once '^parseDNSRecordAll=false$' 'parseDNSRecordAll=true' 'parseDNSRecordAll=true' arkime/etc/config.ini
-    replace-once '^parseHTTPHeaderRequestAll=false$' 'parseHTTPHeaderRequestAll=true' 'parseHTTPHeaderRequestAll=true' arkime/etc/config.ini
-    replace-once '^parseHTTPHeaderResponseAll=false$' 'parseHTTPHeaderResponseAll=true' 'parseHTTPHeaderResponseAll=true' arkime/etc/config.ini
-    replace-once '^parseQSValue=false$' 'parseQSValue=true' 'parseQSValue=true' arkime/etc/config.ini
-    replace-once '^parseSMTPHeaderAll=false$' 'parseSMTPHeaderAll=true' 'parseSMTPHeaderAll=true' arkime/etc/config.ini
-    replace-once '^supportSha256=false$' 'supportSha256=true' 'supportSha256=true' arkime/etc/config.ini
-    replace-once '^maxReqBody=.*$' 'maxReqBody=0' 'maxReqBody=0' arkime/etc/config.ini
-    replace-once '^spiDataMaxIndices=.*$' 'spiDataMaxIndices=10000' 'spiDataMaxIndices=10000' arkime/etc/config.ini
-    replace-once '^valueAutoComplete=false$' 'valueAutoComplete=true' 'valueAutoComplete=true' arkime/etc/config.ini
-    replace-once '^# implicit.*$' 'includes=/opt/arkime/etc/config-local.ini' 'includes=/opt/arkime/etc/config-local.ini' arkime/etc/config.ini
+    if ! grep -Fqx 'includes=/opt/arkime/etc/config-local.ini' arkime/etc/config.ini; then
+        require-single-match '^\[default\]$' arkime/etc/config.ini
+        sed -i -e '/^\[default\]$/a\
+includes=/opt/arkime/etc/config-local.ini' arkime/etc/config.ini
+    fi
     cp "${MALIR_DIR}/resources/config-local.ini" arkime/etc
     arkime-ready || error-exit-message "Failed to configure Arkime."
     touch "${CONFIG_DIR}/arkime_done"
