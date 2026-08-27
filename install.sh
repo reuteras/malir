@@ -122,13 +122,14 @@ function malcolm-build() {
     if [[ -z ${MAXMIND_KEY} ]]; then
         # shellcheck disable=SC1091
         source "${HOME}/Malcolm/config/arkime-secret.env"
+        MAXMIND_ID="${MAXMIND_GEOIP_DB_ACCOUNT_ID}"
         MAXMIND_KEY="${MAXMIND_GEOIP_DB_LICENSE_KEY}"
         if [[ -z ${MAXMIND_KEY} ]]; then
             malcolm-maxmind
         fi
     fi
     sed -i -e "s/200000000/100000000/" scripts/build.sh
-    echo "N" | MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml
+    echo "N" | MAXMIND_GEOIP_DB_ACCOUNT_ID="${MAXMIND_ID}" MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
