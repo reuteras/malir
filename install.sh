@@ -5,6 +5,8 @@ set -Eeuo pipefail
 CONFIG_DIR="${HOME}/.config/malir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
 MALCOLM_VERSION="v26.08.0"
+ALKEME_VERSION="v0.5.0"
+ALKEME_SHA256="24fa01a8a2628a9a2ca52ac6bf354add65ed890c40d0c0e9f3581ffbea7dc7e6"
 MALCOLM_DIR="${HOME}/Malcolm"
 MALIR_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export PATH
@@ -81,6 +83,11 @@ function replace-all() {
 
 function docker-ready() {
     docker --version >/dev/null 2>&1 && docker compose version >/dev/null 2>&1
+}
+
+function alkeme-ready() {
+    [[ -x /usr/local/bin/alkeme ]] &&
+        [[ $(/usr/local/bin/alkeme --version 2>/dev/null) == "alkeme ${ALKEME_VERSION#v}" ]]
 }
 
 function os-ready() {
@@ -219,6 +226,35 @@ function install-docker() {
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     docker-ready || error-exit-message "Docker or the Docker Compose plugin is not available after installation."
     touch "${CONFIG_DIR}/docker_done"
+}
+
+# Install Alkeme, the Arkime terminal user interface
+function install-alkeme() {
+    local asset="alkeme-linux-arm64"
+    local download_url="https://github.com/arkime/alkeme/releases/download/${ALKEME_VERSION}/${asset}"
+    local temp_dir
+    local temp_file
+
+    if alkeme-ready; then
+        touch "${CONFIG_DIR}/alkeme_done"
+        return
+    fi
+
+    info-message "Install Alkeme ${ALKEME_VERSION}."
+    temp_dir=$(mktemp -d)
+    temp_file="${temp_dir}/${asset}"
+    if ! curl --fail --location --silent --show-error "${download_url}" --output "${temp_file}"; then
+        rm -rf -- "${temp_dir}"
+        error-exit-message "Failed to download Alkeme ${ALKEME_VERSION}."
+    fi
+    if ! echo "${ALKEME_SHA256}  ${temp_file}" | sha256sum --check --status; then
+        rm -rf -- "${temp_dir}"
+        error-exit-message "Alkeme ${ALKEME_VERSION} checksum verification failed."
+    fi
+    sudo install -m 0755 "${temp_file}" /usr/local/bin/alkeme
+    rm -rf -- "${temp_dir}"
+    alkeme-ready || error-exit-message "Alkeme installation validation failed."
+    touch "${CONFIG_DIR}/alkeme_done"
 }
 
 # Function to configure Malcolm
@@ -426,6 +462,7 @@ else
 fi
 
 stage-complete os_done os-ready || update-os
+stage-complete alkeme_done alkeme-ready || install-alkeme
 stage-complete docker_done docker-ready || install-docker
 stage-complete configure_done configure-ready || malcolm-configure
 stage-complete maxmind_done maxmind-ready || malcolm-maxmind

@@ -71,6 +71,14 @@ Some useful Malcolm links on 127.0.0.1:
 
 To upload files via command line connect to **sftp://USERNAME@localhost:8022/files/**.
 
+### Alkeme
+
+The installer adds [Alkeme][alkeme], Arkime's terminal interface. After Malcolm
+has started, connect through Malcolm's local nginx proxy with the configured
+credentials:
+
+    alkeme https://localhost/arkime --auth basic --user admin:password
+
 ## Solutions
 
 ### Docker build failures
@@ -100,11 +108,6 @@ scope for malir.
 
 ### Threat intelligence
 
-- [x] Tag Tor exit nodes using `generate-tor-exit-intel.sh`.
-  - The script uses the union of all official Tor Project CollecTor snapshots for
-    the specified day and records the archive digest for reproducibility.
-  - An alternative would be to expose the list through MISP or TAXII, but that
-    introduces another service or account and is excessive for a standalone VM.
 - [ ] Configure [STIX and TAXII][sta].
   - Malcolm already supports static STIX files and TAXII subscriptions. Start
     with a static, versioned STIX file in `~/Malcolm/zeek/intel/STIX/`.
@@ -126,12 +129,6 @@ scope for malir.
     a compiled plugin, pin its source commit and extend the Zeek image build.
   - Add a PCAP fixture and assert the expected Zeek log or notice before making
     any plugin part of the default installation.
-- [x] Enable frequency scoring.
-  - Malcolm's `freq` integration scores entropy in DNS names and TLS server
-    names. The v26.08.0 installer enables it by default.
-  - Future work should tune `FREQ_SEVERITY_THRESHOLD` using representative PCAPs
-    rather than modifying the `freq` container. Lower values flag fewer,
-    higher-entropy names; higher values flag more names.
 - [ ] Evaluate [RITA][rita].
   - **Preferred experiment:** run RITA separately against the Zeek logs produced
     from a test PCAP and compare its beaconing findings with Malcolm dashboards.
@@ -159,10 +156,6 @@ scope for malir.
   - Add headers only when a PCAP corpus demonstrates a missing mail-gateway
     header. Put the complete override in `resources/config-local.ini` and retain
     the upstream defaults because an override replaces the list.
-- [x] Retire the `cidr-map.txt` task.
-  - Malcolm v26.08.0 no longer contains that file. Use Malcolm's local NetBox
-    inventory and enrichment when subnet and asset context is available, or add
-    it manually inside the VM for a particular investigation.
 
 ### Querying and alerting
 
@@ -190,12 +183,28 @@ scope for malir.
     specific log format with PCAP results. Prefer uploaded files over opening a
     network listener in the VM.
 
-### Completed experiments
+### Completed items
 
+- [x] Tag Tor exit nodes using `generate-tor-exit-intel.sh`.
+  - The script uses the union of all official Tor Project CollecTor snapshots for
+    the specified day and records the archive digest for reproducibility.
+  - An alternative would be to expose the list through MISP or TAXII, but that
+    introduces another service or account and is excessive for a standalone VM.
+- [x] Enable frequency scoring.
+  - Malcolm's `freq` integration scores entropy in DNS names and TLS server
+    names. The v26.08.0 installer enables it by default.
+  - Future work should tune `FREQ_SEVERITY_THRESHOLD` using representative PCAPs
+    rather than modifying the `freq` container. Lower values flag fewer,
+    higher-entropy names; higher values flag more names.
+- [x] Retire the `cidr-map.txt` task.
+  - Malcolm v26.08.0 no longer contains that file. Use Malcolm's local NetBox
+    inventory and enrichment when subnet and asset context is available, or add
+    it manually inside the VM for a particular investigation.
 - [x] Add [NFA][nfa] and expose it through Malcolm's internal nginx proxy.
 - [x] Add Arkime right-click actions for NFA and external lookup sites.
 
   [ale]: https://malcolm.fyi/docs/alerting.html
+  [alkeme]: https://arkime.com/alkeme
   [api]: https://malcolm.fyi/docs/api.html
   [crp]: https://malcolm.fyi/docs/custom-rules.html
   [ftl]: https://malcolm.fyi/docs/third-party-logs.html
