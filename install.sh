@@ -49,7 +49,7 @@ function update-os() {
 # Install Docker
 function install-docker() {
     if dpkg --list | grep docker >/dev/null; then
-        touch "${CONFIG_DIR}/os_done"
+        touch "${CONFIG_DIR}/docker_done"
     fi
     sudo install -m 0755 -d /etc/apt/keyrings >/dev/null 2>&1
     sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc >/dev/null 2>&1
