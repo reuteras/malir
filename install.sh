@@ -61,6 +61,24 @@ function replace-once() {
         error-exit-message "Failed to update ${file}."
 }
 
+function replace-all() {
+    local pattern="$1"
+    local replacement="$2"
+    local expected="$3"
+    local file="$4"
+
+    if ! grep -Eq -- "${pattern}" "${file}"; then
+        grep -Eq -- "${expected}" "${file}" ||
+            error-exit-message "Neither the original nor expected value was found in ${file}."
+        return
+    fi
+    sed -i -e "s|${pattern}|${replacement}|g" "${file}"
+    ! grep -Eq -- "${pattern}" "${file}" ||
+        error-exit-message "Failed to replace every match in ${file}."
+    grep -Eq -- "${expected}" "${file}" ||
+        error-exit-message "Expected value was not found after updating ${file}."
+}
+
 function docker-ready() {
     docker --version >/dev/null 2>&1 && docker compose version >/dev/null 2>&1
 }
@@ -103,7 +121,10 @@ function configure-ready() {
 }
 
 function zeek-intel-ready() {
-    [[ -f ${MALCOLM_DIR}/zeek/intel/Zeek-Intelligence-Feeds/main.zeek ]]
+    local file="${MALCOLM_DIR}/zeek/intel/Zeek-Intelligence-Feeds/main.zeek"
+    [[ -f ${file} ]] &&
+        ! grep -Fq '/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds' "${file}" &&
+        grep -Fq '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' "${file}"
 }
 
 function arkime-ready() {
@@ -319,7 +340,7 @@ function malcolm-zeek-intel() {
     cd "${MALCOLM_DIR}/zeek/intel" || exit
     git clone https://github.com/CriticalPathSecurity/Zeek-Intelligence-Feeds.git >/dev/null 2>&1
     cd "${MALCOLM_DIR}" || exit
-    replace-once '/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds' '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' zeek/intel/Zeek-Intelligence-Feeds/main.zeek
+    replace-all '/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds' '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' zeek/intel/Zeek-Intelligence-Feeds/main.zeek
     cd "${CDIR}" || exit
     zeek-intel-ready || error-exit-message "Zeek Intelligence Feeds installation validation failed."
     touch "${CONFIG_DIR}/zeek_intel_done"
