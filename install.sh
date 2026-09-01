@@ -7,6 +7,17 @@ PATH="${PATH}:/usr/libexec/docker/cli-plugins"
 MALCOLM_VERSION="v26.08.0"
 ALKEME_VERSION="v0.5.0"
 ALKEME_SHA256="24fa01a8a2628a9a2ca52ac6bf354add65ed890c40d0c0e9f3581ffbea7dc7e6"
+# Malcolm pins the ja4 zkg package (zeek/scripts/zeek_install_plugins.sh) to a commit
+# that zkg's package-info step can no longer resolve: that step always does a
+# --depth=1 clone, which only contains the tip of each branch, so a pinned commit
+# stops resolving once it's no longer the tip. ja4 is the only package in that
+# script pinned to a raw commit instead of a branch/tag; track its main branch
+# like the other floating packages there instead, and rely on ZEEK_JSON=true so
+# Zeek's logs are parsed by field name instead of column position, so drift in
+# ja4 (or any other zkg plugin) can't silently corrupt adjacent fields the way
+# https://github.com/idaholab/Malcolm/commit/207c4a9e7e68fa13f758b350994d08b202a129f4
+# describes. Revert both once this is fixed upstream in Malcolm.
+ZEEK_JA4_PLUGIN_COMMIT_BROKEN="40aa9321be95793cc361ba1edd6cf14f12707486"
 MALCOLM_DIR="${HOME}/Malcolm"
 MALIR_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export PATH
@@ -121,7 +132,7 @@ function configure-ready() {
         .configuration.filePreserveMode == "all" and
         .configuration.malcolmIcs == false and
         .configuration.zeekICSBestGuess == false
-    ' "${settings_file}" >/dev/null; then
+    ' "${settings_file}" >/dev/null && zeek-json-ready; then
         rm -f "${settings_file}"
         return 0
     fi
@@ -129,11 +140,24 @@ function configure-ready() {
     return 1
 }
 
+function zeek-json-ready() {
+    local file="${MALCOLM_DIR}/config/zeek.env"
+    [[ -f ${file} ]] &&
+        grep -Eq '^ZEEK_JSON=true$' "${file}"
+}
+
 function zeek-intel-ready() {
     local file="${MALCOLM_DIR}/zeek/intel/Zeek-Intelligence-Feeds/main.zeek"
     [[ -f ${file} ]] &&
         ! grep -Fq '/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds' "${file}" &&
         grep -Fq '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' "${file}"
+}
+
+function zeek-ja4-pin-ready() {
+    local file="${MALCOLM_DIR}/zeek/scripts/zeek_install_plugins.sh"
+    [[ -f ${file} ]] &&
+        grep -Eq 'FoxIO-LLC/ja4.main"' "${file}" &&
+        ! grep -Fq "${ZEEK_JA4_PLUGIN_COMMIT_BROKEN}" "${file}"
 }
 
 function arkime-ready() {
@@ -290,6 +314,13 @@ EOF
     # End from https://malcolm.fyi/docs/malcolm-config.html#CommandLineConfig
 
     sudo python3 scripts/install.py --non-interactive
+
+    # Emit Zeek logs as JSON instead of TSV, so field-order drift in third-party
+    # zkg plugins (e.g. ja4, tracked against main - see the ZEEK_JA4_PLUGIN_COMMIT_BROKEN
+    # comment above) can't silently corrupt adjacent columns in a positional parser.
+    replace-once '^ZEEK_JSON=$' 'ZEEK_JSON=true' '^ZEEK_JSON=true$' config/zeek.env
+    zeek-json-ready || error-exit-message "Failed to enable Zeek JSON log output."
+
     # shellcheck disable=SC2016
     python3 scripts/auth_setup \
         --auth \
@@ -386,6 +417,15 @@ function malcolm-zeek-intel() {
     touch "${CONFIG_DIR}/zeek_intel_done"
 }
 
+# Function to track the ja4 Zeek plugin's main branch instead of an unresolvable pinned commit
+function malcolm-patch-zeek-ja4() {
+    info-message "Track ja4 Zeek plugin main branch instead of a pinned commit"
+    cd "${MALCOLM_DIR}" || exit
+    replace-once "${ZEEK_JA4_PLUGIN_COMMIT_BROKEN}" "main" 'FoxIO-LLC/ja4.main"' zeek/scripts/zeek_install_plugins.sh
+    zeek-ja4-pin-ready || error-exit-message "Failed to track the ja4 Zeek plugin main branch."
+    touch "${CONFIG_DIR}/zeek_ja4_pin_done"
+}
+
 # Change nginx configuration - add nfa
 function nginx-configure() {
     info-message "Configure nginx."
@@ -474,6 +514,7 @@ stage-complete zeek_intel_done zeek-intel-ready || malcolm-zeek-intel
 stage-complete arkime_done arkime-ready || malcolm-configure-arkime
 stage-complete nginx_done nginx-ready || nginx-configure
 stage-complete nfa_done nfa-ready || add-nfa
+stage-complete zeek_ja4_pin_done zeek-ja4-pin-ready || malcolm-patch-zeek-ja4
 stage-complete build_done build-ready || malcolm-build
 
 info-message "Installation done."
