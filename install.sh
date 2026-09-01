@@ -118,7 +118,9 @@ function configure-ready() {
         .configuration.reverseDns == true and
         .configuration.fileCarveHttpServer == true and
         .configuration.fileCarveMode == "all" and
-        .configuration.filePreserveMode == "all"
+        .configuration.filePreserveMode == "all" and
+        .configuration.malcolmIcs == false and
+        .configuration.zeekICSBestGuess == false
     ' "${settings_file}" >/dev/null; then
         rm -f "${settings_file}"
         return 0
@@ -275,6 +277,8 @@ function malcolm-configure() {
         | .configuration.fileCarveHttpServer = true
         | .configuration.fileCarveMode = "all"
         | .configuration.filePreserveMode = "all"
+        | .configuration.malcolmIcs = false
+        | .configuration.zeekICSBestGuess = false
 EOF
     jq -f "${JQ_FILE}" "${SETTINGS_FILE}" | sponge "${SETTINGS_FILE}"
 
