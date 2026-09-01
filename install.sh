@@ -7,14 +7,6 @@ PATH="${PATH}:/usr/libexec/docker/cli-plugins"
 MALCOLM_VERSION="v26.08.0"
 ALKEME_VERSION="v0.5.0"
 ALKEME_SHA256="24fa01a8a2628a9a2ca52ac6bf354add65ed890c40d0c0e9f3581ffbea7dc7e6"
-# Malcolm pins the ja4 zkg package (zeek/scripts/zeek_install_plugins.sh) to a commit
-# that zkg's package-info step can no longer resolve: that step always does a
-# --depth=1 clone, which only contains the tip of each branch, and FoxIO-LLC/ja4's
-# main branch has since moved past Malcolm's pinned commit. Repin to a commit that
-# was the tip of main when this was last checked; expect this to need updating again
-# as ja4 gets new commits.
-ZEEK_JA4_PLUGIN_COMMIT_BROKEN="40aa9321be95793cc361ba1edd6cf14f12707486"
-ZEEK_JA4_PLUGIN_COMMIT="e02d9dca595cb8e7b042177881a381c4846a17a3"
 MALCOLM_DIR="${HOME}/Malcolm"
 MALIR_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export PATH
@@ -142,13 +134,6 @@ function zeek-intel-ready() {
     [[ -f ${file} ]] &&
         ! grep -Fq '/usr/local/zeek/share/zeek/site/Zeek-Intelligence-Feeds' "${file}" &&
         grep -Fq '/opt/zeek/share/zeek/site/intel/Zeek-Intelligence-Feeds' "${file}"
-}
-
-function zeek-ja4-pin-ready() {
-    local file="${MALCOLM_DIR}/zeek/scripts/zeek_install_plugins.sh"
-    [[ -f ${file} ]] &&
-        grep -Fq "FoxIO-LLC/ja4|${ZEEK_JA4_PLUGIN_COMMIT}" "${file}" &&
-        ! grep -Fq "${ZEEK_JA4_PLUGIN_COMMIT_BROKEN}" "${file}"
 }
 
 function arkime-ready() {
@@ -401,15 +386,6 @@ function malcolm-zeek-intel() {
     touch "${CONFIG_DIR}/zeek_intel_done"
 }
 
-# Function to repin the ja4 Zeek plugin to a commit zkg can actually resolve
-function malcolm-patch-zeek-ja4() {
-    info-message "Repin ja4 Zeek plugin to a resolvable commit"
-    cd "${MALCOLM_DIR}" || exit
-    replace-once "${ZEEK_JA4_PLUGIN_COMMIT_BROKEN}" "${ZEEK_JA4_PLUGIN_COMMIT}" "${ZEEK_JA4_PLUGIN_COMMIT}" zeek/scripts/zeek_install_plugins.sh
-    zeek-ja4-pin-ready || error-exit-message "Failed to repin the ja4 Zeek plugin commit."
-    touch "${CONFIG_DIR}/zeek_ja4_pin_done"
-}
-
 # Change nginx configuration - add nfa
 function nginx-configure() {
     info-message "Configure nginx."
@@ -498,7 +474,6 @@ stage-complete zeek_intel_done zeek-intel-ready || malcolm-zeek-intel
 stage-complete arkime_done arkime-ready || malcolm-configure-arkime
 stage-complete nginx_done nginx-ready || nginx-configure
 stage-complete nfa_done nfa-ready || add-nfa
-stage-complete zeek_ja4_pin_done zeek-ja4-pin-ready || malcolm-patch-zeek-ja4
 stage-complete build_done build-ready || malcolm-build
 
 info-message "Installation done."
