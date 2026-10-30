@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 CONFIG_DIR="${HOME}/.config/malir"
 PATH="${PATH}:/usr/libexec/docker/cli-plugins"
-MALCOLM_VERSION="v26.09.0"
+MALCOLM_VERSION="v26.10.0"
 ALKEME_VERSION="v0.5.0"
 ALKEME_SHA256="24fa01a8a2628a9a2ca52ac6bf354add65ed890c40d0c0e9f3581ffbea7dc7e6"
 MALCOLM_DIR="${HOME}/Malcolm"
