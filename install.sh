@@ -330,8 +330,9 @@ function malcolm-build() {
             MAXMIND_ID="${MAXMIND_ACCOUNT}"
         fi
     fi
+    malcolm-github-token
     replace-once '200000000' '100000000' '100000000' scripts/build.sh
-    echo "N" | MAXMIND_GEOIP_DB_ACCOUNT_ID="${MAXMIND_ID}" MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml
+    echo "N" | GITHUB_TOKEN="${GITHUB_TOKEN:-}" MAXMIND_GEOIP_DB_ACCOUNT_ID="${MAXMIND_ID}" MAXMIND_GEOIP_DB_LICENSE_KEY="${MAXMIND_KEY}" ZEEK_DEB_ALTERNATE_DOWNLOAD_URL=https://malcolm.fyi/zeek ./scripts/build.sh ./docker-compose-dev.yml
     info-message "Build done."
     read -rp "Verify build status above. If it failed type 'exit' (otherwise hit enter): " dummy
     if [[ ${dummy} == "exit" ]]; then
@@ -339,6 +340,27 @@ function malcolm-build() {
     fi
     build-ready || error-exit-message "One or more configured container images are missing after the build."
     touch "${CONFIG_DIR}/build_done"
+}
+
+# Function to get a GitHub token for the build. Malcolm passes it as a BuildKit
+# secret to Jekyll (nginx docs build) to avoid GitHub API rate limits. Never stored on disk.
+function malcolm-github-token() {
+    if [[ -n ${GITHUB_TOKEN:-} ]]; then
+        info-message "Using GITHUB_TOKEN from environment for the build."
+        return
+    fi
+    if command -v gh >/dev/null 2>&1 && GITHUB_TOKEN="$(gh auth token 2>/dev/null)" && [[ -n ${GITHUB_TOKEN} ]]; then
+        info-message "Using GitHub token from gh CLI for the build."
+        return
+    fi
+    GITHUB_TOKEN=""
+    info-message "The build queries the GitHub API and may hit rate limits without a token."
+    info-message "Create a fine-grained token with no extra permissions at https://github.com/settings/tokens"
+    read -rsp "GitHub token (input hidden, press enter to skip): " GITHUB_TOKEN
+    echo ""
+    if [[ -z ${GITHUB_TOKEN} ]]; then
+        error-message "No GitHub token supplied, the nginx documentation build may fail due to rate limits."
+    fi
 }
 
 # Function to set MaxMind GeoIP license key for Arkime

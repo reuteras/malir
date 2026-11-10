@@ -85,6 +85,22 @@ credentials:
 
 The easiest solution is to just to rerun **install.sh** and chose _N_ when asked about building.
 
+### GitHub API rate limits
+
+The nginx documentation build (Jekyll) queries the GitHub API and can fail when
+unauthenticated requests are rate limited. The installer passes a GitHub token
+to Malcolm's build as a BuildKit secret, so it is not stored in the image
+history or written to disk. The token is taken from, in order:
+
+1. The `GITHUB_TOKEN` environment variable
+2. `gh auth token` if the GitHub CLI is installed and logged in
+3. A hidden prompt (press enter to skip)
+
+A fine-grained token with no extra permissions is enough:
+
+    export GITHUB_TOKEN="$(gh auth token)"
+    ./install.sh
+
 ## Changes to files in Malcolm
 
 Containers are built with `docker-compose-dev.yml` as the argument to `~/Malcolm/scripts/build.sh`. The following scripts are run that can change files in Malcolm:
