@@ -345,22 +345,92 @@ function malcolm-build() {
 # Function to get a GitHub token for the build. Malcolm passes it as a BuildKit
 # secret to Jekyll (nginx docs build) to avoid GitHub API rate limits. Never stored on disk.
 function malcolm-github-token() {
+    local source=""
     if [[ -n ${GITHUB_TOKEN:-} ]]; then
-        info-message "Using GITHUB_TOKEN from environment for the build."
-        return
+        source="environment"
+    elif command -v gh >/dev/null 2>&1 && GITHUB_TOKEN="$(gh auth token 2>/dev/null)" && [[ -n ${GITHUB_TOKEN} ]]; then
+        source="gh CLI"
     fi
-    if command -v gh >/dev/null 2>&1 && GITHUB_TOKEN="$(gh auth token 2>/dev/null)" && [[ -n ${GITHUB_TOKEN} ]]; then
-        info-message "Using GitHub token from gh CLI for the build."
-        return
+    if [[ -n ${source} ]]; then
+        GITHUB_TOKEN="$(strip-whitespace "${GITHUB_TOKEN}")"
+        info-message "Found GitHub token from ${source}: $(mask-token "${GITHUB_TOKEN}")"
+        if github-token-valid "${GITHUB_TOKEN}"; then
+            info-message "GitHub token accepted by the GitHub API."
+            export GITHUB_TOKEN
+            return
+        fi
+        error-message "GitHub token from ${source} was rejected by the GitHub API."
     fi
+
     GITHUB_TOKEN=""
-    info-message "The build queries the GitHub API and may hit rate limits without a token."
+    info-message "The nginx documentation build needs a valid GitHub token."
     info-message "Create a fine-grained token with no extra permissions at https://github.com/settings/tokens"
-    read -rsp "GitHub token (input hidden, press enter to skip): " GITHUB_TOKEN
+    while true; do
+        read-masked "GitHub token (shown as *, press enter to skip): " GITHUB_TOKEN
+        GITHUB_TOKEN="$(strip-whitespace "${GITHUB_TOKEN}")"
+        if [[ -z ${GITHUB_TOKEN} ]]; then
+            error-message "No GitHub token supplied, the nginx documentation build will likely fail."
+            break
+        fi
+        info-message "Received token: $(mask-token "${GITHUB_TOKEN}")"
+        if github-token-valid "${GITHUB_TOKEN}"; then
+            info-message "GitHub token accepted by the GitHub API."
+            break
+        fi
+        error-message "GitHub API rejected the token (check for a truncated or garbled paste). Try again."
+    done
+    export GITHUB_TOKEN
+}
+
+# Read a secret from the terminal, echoing one '*' per character. Handles backspace.
+function read-masked() {
+    local prompt="$1"
+    local -n result="$2"
+    local char
+    result=""
+    printf '%s' "${prompt}"
+    while IFS= read -rsn1 char; do
+        if [[ -z ${char} || ${char} == $'\n' || ${char} == $'\r' ]]; then
+            break
+        elif [[ ${char} == $'\x7f' || ${char} == $'\b' ]]; then
+            if [[ -n ${result} ]]; then
+                result="${result%?}"
+                printf '\b \b'
+            fi
+        else
+            result+="${char}"
+            printf '*'
+        fi
+    done
     echo ""
-    if [[ -z ${GITHUB_TOKEN} ]]; then
-        error-message "No GitHub token supplied, the nginx documentation build may fail due to rate limits."
+}
+
+# Remove spaces, tabs, CR and LF that copy-paste into a VM console tends to add.
+function strip-whitespace() {
+    printf '%s' "${1//[[:space:]]/}"
+}
+
+# Show enough of a token to recognise it without revealing it.
+function mask-token() {
+    local token="$1"
+    local prefix="${token%%_*}"
+    [[ ${prefix} == "${token}" ]] && prefix="" || prefix="${prefix}_"
+    [[ ${prefix} == "github_" ]] && prefix="github_pat_"
+    printf '%s...%s (%d characters)' "${prefix}" "${token: -4}" "${#token}"
+}
+
+# Check the token against the GitHub API. The header is passed on stdin so the
+# token does not appear in the process list.
+function github-token-valid() {
+    local status
+    status=$(printf 'Authorization: Bearer %s\n' "$1" |
+        curl --silent --output /dev/null --write-out '%{http_code}' --max-time 15 \
+            --header @- https://api.github.com/rate_limit) || status="000"
+    if [[ ${status} == "000" ]]; then
+        error-message "Could not reach api.github.com to verify the token."
+        return 1
     fi
+    [[ ${status} == "200" ]]
 }
 
 # Function to set MaxMind GeoIP license key for Arkime
