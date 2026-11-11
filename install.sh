@@ -167,6 +167,14 @@ function add-nfa-compose-service() {
     sed -i "/services:/r ${service_file}" "${compose_file}"
 }
 
+# shellcheck disable=SC2016
+ZKG_INSTALL_LINE='  env "${ENVS[@]}" zkg install --nodeps --force --skiptests "${EXTRA_ZKG_PARAMS[@]}" --version "$COMMIT" "$REPO_URL"'
+ZKG_FALLBACK_MARKER='# malir: zkg pinned-commit fallback'
+
+function zeek-packages-ready() {
+    grep -Fq "${ZKG_FALLBACK_MARKER}" "${MALCOLM_DIR}/zeek/scripts/zeek_install_plugins.sh"
+}
+
 function build-ready() {
     local image
     local found=false
@@ -509,6 +517,43 @@ includes=/opt/arkime/etc/config-local.ini' arkime/etc/config.ini
     touch "${CONFIG_DIR}/arkime_done"
 }
 
+# Function to make pinned Zeek packages installable after upstream moves on.
+# zkg clones with --depth 1 and then checks out the pinned commit, which fails with
+# "no such commit" once the commit is no longer a branch tip. On failure, fetch the
+# exact commit with Malcolm's git_clone_pinned and let zkg install from that local clone.
+function zeek-packages-patch() {
+    info-message "Patch Zeek package installer to handle pinned commits that are no longer branch tips."
+    cd "${MALCOLM_DIR}" || exit
+    local file="zeek/scripts/zeek_install_plugins.sh"
+    local count line_number snippet
+    if zeek-packages-ready; then
+        touch "${CONFIG_DIR}/zeek_packages_done"
+        return
+    fi
+    count=$(grep -Fxc -- "${ZKG_INSTALL_LINE}" "${file}" || true)
+    [[ ${count} -eq 1 ]] ||
+        error-exit-message "Expected one zkg install line in ${file}, found ${count}."
+    line_number=$(grep -Fxn -- "${ZKG_INSTALL_LINE}" "${file}" | cut -d: -f1)
+    snippet=$(mktemp)
+    # shellcheck disable=SC2016
+    tee "${snippet}" >/dev/null <<EOF
+  ${ZKG_FALLBACK_MARKER}
+  echo "zkg could not check out \$COMMIT from \$REPO_URL, retrying from a pinned local clone"
+  local LOCAL_DIR RC=0
+  LOCAL_DIR="/tmp/zkg-pinned/\$(basename "\${REPO_URL%.git}")"
+  rm -rf "\$LOCAL_DIR"
+  git_clone_pinned "\$REPO_URL" "\$COMMIT" "\$LOCAL_DIR" &&
+    env "\${ENVS[@]}" zkg install --nodeps --force --skiptests "\${EXTRA_ZKG_PARAMS[@]}" --version "\$COMMIT" "\$LOCAL_DIR" || RC=\$?
+  rm -rf "\$LOCAL_DIR"
+  return \$RC
+EOF
+    sed -i -e "${line_number}s/\$/ \\&\\& return/" -e "${line_number}r ${snippet}" "${file}"
+    rm -f "${snippet}"
+    bash -n "${file}" || error-exit-message "Patched ${file} has a syntax error."
+    zeek-packages-ready || error-exit-message "Failed to patch ${file}."
+    touch "${CONFIG_DIR}/zeek_packages_done"
+}
+
 function add-nfa() {
     info-message "Add nfa"
     cd "${MALCOLM_DIR}" || exit
@@ -566,6 +611,7 @@ stage-complete zeek_intel_done zeek-intel-ready || malcolm-zeek-intel
 stage-complete arkime_done arkime-ready || malcolm-configure-arkime
 stage-complete nginx_done nginx-ready || nginx-configure
 stage-complete nfa_done nfa-ready || add-nfa
+stage-complete zeek_packages_done zeek-packages-ready || zeek-packages-patch
 stage-complete build_done build-ready || malcolm-build
 
 info-message "Installation done."
